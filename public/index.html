@@ -975,17 +975,29 @@ h1,h2,b,dd,.qbox,.chips span,.notif li{overflow-wrap:anywhere}
   /* ---- server connection: every read comes from S (filled by the server), every change goes through api() ---- */
   var S={me:null,users:[],reqs:[],ints:[],log:[],trash:[],svc:{},stamps:{},staff:null,org:{},targets:{},pub:{emp:null},counts:{},rvSeen:'',lastBackup:null};
   var SIG='';
+  /* ---- demo mode: only with ?demo=1 in the address. No server calls; a sample admin session with empty data lives in localStorage.
+         Never switched on by hostname, because the real deployment proxies /api to the live server. ---- */
+  var DEMO=/[?&]demo=1(&|$)/.test(location.search);
+  function demoOn(){try{return localStorage.getItem('isLoggedIn')==='true'}catch(e){return false}}
+  function demoState(){var me={id:1,type:'admin',role:'gm',name:'مدير تجريبي',dept:'',unit:'',username:'admin',phone:'',perms:['requests_view','requests_decide','meetings','settings','users_manage','data_manage','audit_view']};
+    return {me:me,users:[me],reqs:[],ints:[],log:[],trash:[],svc:{},stamps:{},staff:null,org:{},targets:{},pub:{emp:null},rvSeen:'',lastBackup:null,
+      counts:{ad:1,rv:0,reqs:0,reqP:0,reqA:0,reqR:0,ints:0,intP:0,intS:0,trash:0,log:0,kb:0,version:'demo'}}}
+  function demoLogin(u,p){if(u!=='admin'||p!=='admin123')return false;try{localStorage.setItem('isLoggedIn','true')}catch(e){}applyState(demoState());return true}
   function applyState(st){S=st;users=st.users||[];sid=st.me?st.me.id:null;ORG=st.org||ORG;SIG=JSON.stringify(st)}
   function clearState(){S={me:null,users:[],reqs:[],ints:[],log:[],trash:[],svc:{},stamps:{},staff:null,org:ORG,targets:{},pub:S.pub||{emp:null},counts:{},rvSeen:''};users=[];sid=null}
   function netErr(){return {ok:false,error:'تعذّر الاتصال بالخادم. تحقق من الشبكة ثم أعد المحاولة.'}}
   function api(a,body){body=body||{};body.a=a;
+    if(DEMO){if(a==='logout'){try{localStorage.removeItem('isLoggedIn')}catch(e){}return Promise.resolve({ok:true})}
+      return Promise.resolve({ok:false,error:'هذه نسخة عرض تجريبي: الحفظ والتعديل غير متاح.'})}
     return fetch('api/act',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Requested-With':'qp'},body:JSON.stringify(body)})
       .then(function(r){return r.json().catch(function(){return {ok:false,error:'استجابة غير صالحة من الخادم'}}).then(function(j){
         if(r.status===401&&a!=='login'&&a!=='emp_login'&&a!=='signup'&&a!=='logout'){sessionLost();return j}
         if(j.state)applyState(j.state);return j})},netErr)}
   /* resolves the state, null when signed out, undefined when the server can't be reached */
-  function fetchState(){return fetch('api/state',{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json()}).then(function(st){return st&&st.me?st:null}).catch(function(){return undefined})}
-  function fetchPub(){return fetch('api/public',{cache:'no-store'}).then(function(r){return r.json()}).then(function(p){S.pub=p;refreshEmpTab()}).catch(function(){})}
+  function fetchState(){if(DEMO)return Promise.resolve(demoOn()?demoState():null);
+    return fetch('api/state',{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json()}).then(function(st){return st&&st.me?st:null}).catch(function(){return undefined})}
+  function fetchPub(){if(DEMO)return Promise.resolve();
+    return fetch('api/public',{cache:'no-store'}).then(function(r){return r.json()}).then(function(p){S.pub=p;refreshEmpTab()}).catch(function(){})}
   function sessionLost(){if(!sid)return;clearState();if(!$('fm').hidden)closeSheet();$('notif').hidden=true;tab('login');msg('login-msg','انتهت الجلسة، يرجى تسجيل الدخول من جديد.');show('auth')}
   /* show a server error under the field it belongs to, or in the given message box */
   function fail(j,boxId){if(j.field&&$(j.field)&&$(j.field+'-e')){setErr(j.field,j.error);try{$(j.field).focus()}catch(e){}}else if(boxId)msg(boxId,j.error);else toast(j.error);return false}
@@ -1077,6 +1089,8 @@ h1,h2,b,dd,.qbox,.chips span,.notif li{overflow-wrap:anywhere}
     var v=$('l-user').value.trim(),p=$('l-pass').value;
     var a=setErr('l-user',v?'':'يرجى إدخال رقم الهاتف أو اسم المستخدم'),b=setErr('l-pass',p?'':'يرجى إدخال كلمة المرور');
     if(!(a&&b))return;msg('login-msg','');
+    if(DEMO){if(!demoLogin(v,p)){msg('login-msg','وضع العرض التجريبي: استخدم admin / admin123');return}
+      $('p-login').reset();show('home');return}
     busy(this,function(){return api('login',{u:v,p:p}).then(function(j){
       if(!j.ok){msg('login-msg',j.error);return}
       $('p-login').reset();show('home')})});

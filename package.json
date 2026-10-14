@@ -1,0 +1,13 @@
+{
+  "name": "qadisiyah-education-portal",
+  "version": "2.0.0",
+  "description": "بوابة تربية القادسية الإلكترونية — خادم وقاعدة بيانات",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

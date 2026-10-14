@@ -1,0 +1,24 @@
+# خدمة systemd لتشغيل البوابة تلقائياً على خادم Linux
+# انسخ هذا الملف إلى /etc/systemd/system/ ثم:
+#   sudo systemctl daemon-reload && sudo systemctl enable --now qadisiyah-portal
+[Unit]
+Description=Qadisiyah Education Portal
+After=network.target
+
+[Service]
+Type=simple
+User=portal
+WorkingDirectory=/opt/qadisiyah-portal
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+Environment=PORT=3000
+Environment=HOST=127.0.0.1
+Environment=DATA_DIR=/var/lib/qadisiyah-portal
+Environment=TRUST_PROXY=1
+Environment=COOKIE_SECURE=1
+# كلمة مرور المدير العام عند أول تشغيل فقط (احذف السطر بعدها)
+# Environment=ADMIN_PASSWORD=ضع-كلمة-مرور-قوية
+
+[Install]
+WantedBy=multi-user.target

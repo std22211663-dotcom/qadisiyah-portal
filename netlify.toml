@@ -1,0 +1,23 @@
+[build]
+  publish = "public"
+  command = "echo static"
+
+# الواجهة على Netlify والخادم (API) على Render. طلبات /api تُمرَّر عبر Netlify
+# فيبقى الكوكي من نفس الموقع (بدون CORS). غيّر الرابط إذا اختلف اسم الخدمة في Render.
+[[redirects]]
+  from = "/api/*"
+  to = "https://qadisiyah-portal-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "same-origin"
+

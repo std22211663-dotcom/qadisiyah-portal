@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: qadisiyah-portal-it-team
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter          # القرص الدائم لا يتوفر في الخطة المجانية
+    healthCheckPath: /healthz
+    autoDeploy: true       # كل git push إلى main ينشر النسخة الجديدة تلقائياً
+    envVars:
+      - key: ADMIN_PASSWORD   # اكتب كلمة المرور في لوحة Render عند أول نشر
+        sync: false
+    disk:
+      name: portal-data
+      mountPath: /var/data
+      sizeGB: 5

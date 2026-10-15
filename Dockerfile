@@ -7,8 +7,7 @@ ENV NODE_ENV=production \
     PORT=10000 \
     DATA_DIR=/var/data \
     TRUST_PROXY=1 \
-    COOKIE_SECURE=1 \
-    SERVE_STATIC=0
+    COOKIE_SECURE=1
 RUN mkdir -p /var/data && chown -R node:node /var/data /app
 USER node
 EXPOSE 10000

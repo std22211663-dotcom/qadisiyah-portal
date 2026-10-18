@@ -523,6 +523,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
 .sw[aria-checked="true"]{background:linear-gradient(90deg,var(--accent),#34D399)}
 .tl li.done::before{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 25%,transparent)}
 
+.dsel{display:grid;grid-template-columns:1fr 1.7fr 1.1fr;gap:8px}.dsel.tsel{grid-template-columns:1fr 1fr 1.2fr}.dsel select{padding-inline:10px}
 /* ===== entrance motion ===== */
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .main,.auth-main .brand,.panel{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
@@ -2320,6 +2321,43 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     busy(this,function(){return api('change_pass',{old:o,new:n}).then(function(j){if(!j.ok)return fail(j);$('cp-form').reset();toast('تم تغيير كلمة المرور')})});
   });
 
+
+  /* ---------- Arabic date / time pickers: the native inputs show English (mm/dd/yyyy, AM/PM), so they are swapped for selects.
+     The original <input> stays in the page as type=hidden with the same id and the same value format (YYYY-MM-DD / HH:MM). ---------- */
+  var AR_M=['كانون الثاني','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين الأول','تشرين الثاني','كانون الأول'];
+  function ad(n){return String(n).replace(/[0-9]/g,function(c){return '٠١٢٣٤٥٦٧٨٩'[c]})}
+  function p2(n){return (n<10?'0':'')+n}
+  function mkSel(label,first,opts){var s=document.createElement('select');s.setAttribute('aria-label',label);
+    s.innerHTML='<option value="">'+first+'</option>'+opts.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');return s}
+  function pushVal(inp,v){if(inp.value===v)return;inp.value=v;inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}))}
+  function enhanceDates(root){
+    [].forEach.call(root.querySelectorAll('input[type=date]:not([data-ar]),input[type=time]:not([data-ar])'),function(inp){
+      var isDate=inp.type==='date',val=inp.value,box=document.createElement('div'),Y=new Date().getFullYear(),sels;
+      inp.setAttribute('data-ar','1');inp.type='hidden';
+      if(isDate){
+        var y0,y1,desc=false;if(inp.id==='s-birth'){y0=Y-18;y1=Y-75;desc=true}else{y0=Y;y1=Y+2}
+        var ys=[];for(var y=y0;desc?y>=y1:y<=y1;y+=desc?-1:1)ys.push([y,ad(y)]);
+        var ds=[],ms=[];for(var d=1;d<=31;d++)ds.push([d,ad(d)]);AR_M.forEach(function(m,i){ms.push([i+1,m])});
+        sels=[mkSel('اليوم','اليوم',ds),mkSel('الشهر','الشهر',ms),mkSel('السنة','السنة',ys)];
+        box.className='dsel';
+        var upd=function(){var d=+sels[0].value,m=+sels[1].value,y=+sels[2].value;
+          if(d&&m&&y){var last=new Date(y,m,0).getDate();if(d>last){d=last;sels[0].value=d}pushVal(inp,y+'-'+p2(m)+'-'+p2(d))}else pushVal(inp,'')};
+        var mt=val&&val.match(/^(\d{4})-(\d{2})-(\d{2})/);if(mt){sels[0].value=+mt[3];sels[1].value=+mt[2];sels[2].value=+mt[1]}
+      }else{
+        var hs=[],mi=[];for(var h=1;h<=12;h++)hs.push([h,ad(h)]);for(var k=0;k<60;k++)mi.push([k,ad(p2(k))]);
+        sels=[mkSel('الساعة','الساعة',hs),mkSel('الدقيقة','الدقيقة',mi),mkSel('صباحاً أو مساءً','ص / م',[['am','صباحاً'],['pm','مساءً']])];
+        box.className='dsel tsel';
+        var upd=function(){var h=sels[0].value,m=sels[1].value,ap=sels[2].value;
+          if(h!==''&&m!==''&&ap){var H=+h%12+(ap==='pm'?12:0);pushVal(inp,p2(H)+':'+p2(+m))}else pushVal(inp,'')};
+        var mt=val&&val.match(/^(\d{2}):(\d{2})/);if(mt){var H=+mt[1];sels[0].value=H%12||12;sels[1].value=+mt[2];sels[2].value=H>=12?'pm':'am'}
+      }
+      sels.forEach(function(s){s.addEventListener('change',upd);box.appendChild(s)});
+      sels[0].id=inp.id+'-s1';var lb=document.querySelector('label[for="'+inp.id+'"]');if(lb)lb.htmlFor=sels[0].id;
+      inp.parentNode.insertBefore(box,inp);
+    })}
+  document.addEventListener('reset',function(e){setTimeout(function(){[].forEach.call(e.target.querySelectorAll('input[data-ar]'),function(i){i.value=''})},0)});
+  enhanceDates(document);
+  new MutationObserver(function(ms){for(var i=0;i<ms.length;i++)if(ms[i].addedNodes.length){enhanceDates(document);return}}).observe(document.body,{childList:true,subtree:true});
   fetchPub();
   fetchState().then(function(st){if(st){applyState(st);show('home')}else show('auth')});
 })();

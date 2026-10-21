@@ -569,7 +569,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     <div class="panel">
       <div class="tabs" role="tablist" aria-label="نوع العملية">
         <button class="tab" role="tab" id="t-login" aria-selected="true" aria-controls="p-login">تسجيل الدخول</button>
-        <button class="tab" role="tab" id="t-emp" aria-selected="false" aria-controls="p-emp" tabindex="-1" hidden>الرقم الوظيفي</button>
+        <button class="tab" role="tab" id="t-emp" aria-selected="false" aria-controls="p-emp" tabindex="-1">الرقم الوظيفي</button>
         <button class="tab" role="tab" id="t-signup" aria-selected="false" aria-controls="p-signup" tabindex="-1">إنشاء حساب جديد</button>
       </div>
 
@@ -594,14 +594,14 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
 
       <form id="p-emp" role="tabpanel" aria-labelledby="t-emp" novalidate hidden>
         <div class="formmsg" id="emp-msg" role="alert" hidden></div>
-        <p class="help" style="margin:0 0 14px">ادخل برقمك الوظيفي دون إنشاء حساب، وستظهر معلوماتك المسجلة لدى المديرية تلقائياً.</p>
+        <p class="help" style="margin:0 0 14px">نسيت كلمة المرور؟ ادخل برقمك الوظيفي وتحقق بتاريخ التولد أو رقم الهوية المسجّل في حسابك.</p>
         <div class="field">
           <label for="e-id">الرقم الوظيفي</label>
-          <input id="e-id" inputmode="numeric" autocomplete="off" dir="ltr" style="text-align:right">
+          <input id="e-id" autocomplete="off" dir="ltr" style="text-align:right">
           <div class="err" id="e-id-e"></div>
         </div>
         <div class="field">
-          <label for="e-ver" id="e-ver-l">تاريخ التولد</label>
+          <label for="e-ver" id="e-ver-l">تاريخ التولد أو رقم الهوية</label>
           <input id="e-ver" autocomplete="off" dir="ltr" style="text-align:right">
           <div class="help" id="e-ver-h">للتحقق من هويتك</div>
           <div class="err" id="e-ver-e"></div>
@@ -616,16 +616,18 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     <div class="field"><label for="s-job">العنوان الوظيفي</label>
       <select id="s-job" required><option value="">اختر...</option><option>مدرس</option><option>معلم</option><option>إداري</option></select><div class="err" id="s-job-e"></div></div>
   </div>
+  <div class="field"><label for="s-birth">التولد</label><input id="s-birth" type="date" dir="ltr" style="text-align:right" required><div class="err" id="s-birth-e"></div></div>
   <div class="row2">
-    <div class="field"><label for="s-birth">التولد</label><input id="s-birth" type="date" dir="ltr" style="text-align:right" required><div class="err" id="s-birth-e"></div></div>
     <div class="field"><label for="s-appt">نوع التعيين</label>
       <select id="s-appt" required><option value="">اختر...</option><option>ملاك دائم</option><option>عقد</option><option>أجور</option><option>محاضر مجاني</option></select><div class="err" id="s-appt-e"></div></div>
+    <div class="field"><label for="s-emp">الرقم الوظيفي</label><input id="s-emp" dir="ltr" style="text-align:right" autocomplete="off" required><div class="help">للدخول به عند نسيان كلمة المرور</div><div class="err" id="s-emp-e"></div></div>
   </div>
   <div class="row2">
+    <div class="field"><label for="s-nid">رقم الهوية</label><input id="s-nid" inputmode="numeric" dir="ltr" style="text-align:right" autocomplete="off" required><div class="help">الهوية الوطنية أو البطاقة الموحدة</div><div class="err" id="s-nid-e"></div></div>
     <div class="field"><label for="s-phone">رقم الهاتف</label><input id="s-phone" type="tel" inputmode="numeric" autocomplete="tel" dir="ltr" style="text-align:right" required><div class="help">مثال: 07701234567</div><div class="err" id="s-phone-e"></div></div>
-    <div class="field"><label for="s-user">اسم المستخدم</label><input id="s-user" autocomplete="username" dir="ltr" style="text-align:right" required><div class="help">أحرف إنجليزية وأرقام (4 على الأقل)</div><div class="err" id="s-user-e"></div></div>
   </div>
-  <div class="row2">
+  <div class="field"><label for="s-user">اسم المستخدم</label><input id="s-user" autocomplete="username" dir="ltr" style="text-align:right" required><div class="help">أحرف إنجليزية وأرقام (4 على الأقل)</div><div class="err" id="s-user-e"></div></div>
+<div class="row2">
     <div class="field"><label for="s-pass">كلمة المرور</label>
       <div class="inp"><input id="s-pass" type="password" autocomplete="new-password" class="has-btn" required>
       <button type="button" class="eye" data-eye="s-pass" aria-label="إظهار كلمة المرور"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.500 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
@@ -1015,6 +1017,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   <button class="back" data-back="settings"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>رجوع</button>
   <div class="hello"><h1>إدارة المراجعين</h1><p>كل من ينشئ حساباً من صفحة «إنشاء حساب جديد» يظهر هنا تلقائياً.</p></div>
   <div class="closed" id="rv-svc" hidden></div>
+  <div class="acts" style="margin:0 0 16px"><button class="btn auto" type="button" id="rv-add"><span>إضافة مراجع</span></button></div>
   <div class="stats" id="rv-stats"></div>
   <section class="box" aria-labelledby="rv-br-t"><h2 id="rv-br-t">توزيع المراجعين</h2><div id="rv-break"></div></section>
   <div class="bar">
@@ -1131,6 +1134,37 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
         <div class="err" id="sp-file-e" role="alert"></div>
       </div>
       <div class="acts"><button class="btn auto" type="submit"><span>إرسال</span></button><button class="btn sec auto" type="button" id="sup-c">إلغاء</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="fm" id="rvf-m" hidden>
+  <div class="fm-in" role="dialog" aria-modal="true" aria-labelledby="rvf-t" style="max-width:620px">
+    <div class="fm-head">
+      <div style="min-width:0"><h2 id="rvf-t">إضافة مراجع</h2><p class="help" style="margin:0">ينشئ المراجع بنفسه حساباً من صفحة الدخول، أو تنشئه له من هنا.</p></div>
+      <button type="button" class="sbtn" id="rvf-x" aria-label="إغلاق">إغلاق</button>
+    </div>
+    <form id="rvf-f" novalidate style="padding:0">
+      <div class="formmsg" id="rvf-msg" role="alert" hidden></div>
+      <div class="field"><label for="rf-name">الاسم الكامل</label><input id="rf-name" maxlength="80"><div class="err" id="rf-name-e"></div></div>
+      <div class="row2">
+        <div class="field"><label for="rf-work">مكان العمل</label><input id="rf-work" maxlength="120"><div class="err" id="rf-work-e"></div></div>
+        <div class="field"><label for="rf-job">العنوان الوظيفي</label><select id="rf-job"><option value="">اختر...</option><option>مدرس</option><option>معلم</option><option>إداري</option></select><div class="err" id="rf-job-e"></div></div>
+      </div>
+      <div class="field"><label for="rf-birth">التولد</label><input id="rf-birth" type="date" dir="ltr" style="text-align:right"><div class="err" id="rf-birth-e"></div></div>
+      <div class="row2">
+        <div class="field"><label for="rf-appt">نوع التعيين</label><select id="rf-appt"><option value="">اختر...</option><option>ملاك دائم</option><option>عقد</option><option>أجور</option><option>محاضر مجاني</option></select><div class="err" id="rf-appt-e"></div></div>
+        <div class="field"><label for="rf-emp">الرقم الوظيفي</label><input id="rf-emp" dir="ltr" style="text-align:right" autocomplete="off"><div class="err" id="rf-emp-e"></div></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="rf-nid">رقم الهوية</label><input id="rf-nid" inputmode="numeric" dir="ltr" style="text-align:right" autocomplete="off"><div class="err" id="rf-nid-e"></div></div>
+        <div class="field"><label for="rf-phone">رقم الهاتف</label><input id="rf-phone" type="tel" inputmode="numeric" dir="ltr" style="text-align:right"><div class="help">مثال: 07701234567</div><div class="err" id="rf-phone-e"></div></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="rf-user">اسم المستخدم</label><input id="rf-user" dir="ltr" style="text-align:right" autocomplete="off"><div class="err" id="rf-user-e"></div></div>
+        <div class="field"><label for="rf-pass">كلمة المرور</label><input id="rf-pass" type="text" dir="ltr" style="text-align:right" autocomplete="off"><div class="help" id="rf-pass-h">6 أحرف على الأقل</div><div class="err" id="rf-pass-e"></div></div>
+      </div>
+      <div class="acts"><button class="btn auto" type="submit"><span id="rvf-ok">حفظ</span></button><button class="btn sec auto" type="button" id="rvf-c">إلغاء</button></div>
     </form>
   </div>
 </div>
@@ -1270,7 +1304,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   function birthErr(b){if(!b)return 'يرجى إدخال تاريخ التولد';var age=(Date.now()-new Date(b))/31557600000;return (isNaN(age)||age<18||age>75)?'تاريخ التولد غير صحيح':''}
   $('p-signup').addEventListener('submit',function(e){e.preventDefault();
     var g=function(i){return $(i).value.trim()};
-    var n=g('s-name'),w=g('s-work'),j=$('s-job').value,b=$('s-birth').value,a=$('s-appt').value,ph=digits(g('s-phone')),un=g('s-user'),p=$('s-pass').value,p2=$('s-pass2').value;
+    var n=g('s-name'),w=g('s-work'),j=$('s-job').value,b=$('s-birth').value,a=$('s-appt').value,ph=digits(g('s-phone')),un=g('s-user'),p=$('s-pass').value,p2=$('s-pass2').value,em=g('s-emp'),ni=digits(g('s-nid')).split(' ').join('');
     var ok=[setErr('s-name',n.split(/\s+/).length>=2?'':'يرجى كتابة الاسم الثنائي على الأقل'),
       setErr('s-work',w?'':'يرجى كتابة مكان العمل'),
       setErr('s-job',j?'':'يرجى اختيار العنوان الوظيفي'),
@@ -1278,10 +1312,12 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       setErr('s-appt',a?'':'يرجى اختيار نوع التعيين'),
       setErr('s-phone',/^07\d{9}$/.test(ph)?'':'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)'),
       setErr('s-user',/^[A-Za-z0-9_.]{4,20}$/.test(un)?'':'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)'),
+      setErr('s-emp',/^[A-Za-z0-9]{1,20}$/.test(em)?'':'يرجى كتابة الرقم الوظيفي'),
+      setErr('s-nid',/^[0-9]{8,14}$/.test(ni)?'':'رقم الهوية غير صحيح (أرقام فقط، من 8 إلى 14 رقماً)'),
       setErr('s-pass',p.length>=6?'':'كلمة المرور يجب ألا تقل عن 6 أحرف'),
       setErr('s-pass2',p2===p&&p2?'':'كلمتا المرور غير متطابقتين')].every(Boolean);
     if(!ok)return;msg('signup-msg','');
-    busy(this,function(){return api('signup',{name:n,work:w,job:j,birth:b,appt:a,phone:ph,username:un,pass:p}).then(function(r){
+    busy(this,function(){return api('signup',{name:n,work:w,job:j,birth:b,appt:a,phone:ph,username:un,pass:p,empNo:em,nid:ni}).then(function(r){
       if(!r.ok)return fail(r,'signup-msg');
       $('p-signup').reset();tab('login');$('l-user').value=un;
       msg('login-msg','تم إنشاء الحساب بنجاح، يمكنك تسجيل الدخول الآن.',true);$('l-pass').focus()})});
@@ -1404,7 +1440,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       bars('حسب نوع التعيين',countBy(all,'appt','غير محدد'),all.length)+bars('حسب مكان العمل',countBy(all,'work','غير محدد'),all.length)+'</div>'
       :'<p class="help" style="margin:0">سيظهر التوزيع بعد تسجيل أول مراجع.</p>';
     var list=all.filter(function(u){if(!q)return true;
-      return [u.name,u.username,u.phone,u.work,u.job,u.appt].some(function(f){return String(f||'').toLowerCase().indexOf(q)>-1})});
+      return [u.name,u.username,u.phone,u.work,u.job,u.appt,u.empId].some(function(f){return String(f||'').toLowerCase().indexOf(q)>-1})});
     list.sort(function(a,b){
       if(rvSort==='name')return a.name.localeCompare(b.name,'ar');
       if(rvSort==='act')return (cnt(rs,b.id)+cnt(is,b.id))-(cnt(rs,a.id)+cnt(is,a.id));
@@ -1416,12 +1452,12 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       var j=joinedAt(u),nr=cnt(rs,u.id),ni=cnt(is,u.id),pend=rs.filter(function(r){return r.uid===u.id&&r.status===ST.p}).length;
       return '<li class="ucard"><div style="min-width:0"><b>'+esc(u.name)+'</b>'+(isNewRev(u)?'<span class="rv-new-tag">جديد</span>':'')+
         '<div class="help">'+esc(u.job||'مراجع')+(u.appt?' • '+esc(u.appt):'')+' • <span class="ltr">@'+esc(u.username)+'</span></div>'+
-        '<div class="chips"><span>'+esc(u.work||u.dept||'-')+'</span><span class="ltr">'+esc(u.phone||'-')+'</span>'+
+        '<div class="chips"><span>'+esc(u.work||u.dept||'-')+'</span><span class="ltr">'+esc(u.phone||'-')+'</span>'+(u.empId?'<span class="ltr">وظيفي: '+esc(u.empId)+'</span>':'')+
         '<span>سجّل: '+(j?fdate(j):'غير معروف')+'</span><span>الطلبات: '+nr+(pend?' ('+pend+' قيد المراجعة)':'')+'</span>'+'<span>المقابلات: '+ni+'</span>'+
         (blockedFor(u,'req')?'<span class="bad">الطلبات موقوفة</span>':'')+(blockedFor(u,'int')?'<span class="bad">المقابلات موقوفة</span>':'')+'</div></div>'+
         '<div class="acts" style="margin:0">'+['req','int'].map(function(k){var b=blockedFor(u,k);
           return '<button class="sbtn rvt" data-rvblk="'+k+'" data-id="'+u.id+'" aria-pressed="'+b+'">'+(b?'تفعيل ':'إيقاف ')+(k==='req'?'الطلبات':'المقابلات')+'</button>'}).join('')+
-        '<button class="sbtn danger" data-rvdel="'+u.id+'" aria-label="حذف حساب '+esc(u.name)+'">حذف الحساب</button></div></li>'}).join('');
+        '<button class="sbtn" data-rvedit="'+u.id+'" aria-label="تعديل '+esc(u.name)+'">تعديل</button>'+'<button class="sbtn danger" data-rvdel="'+u.id+'" aria-label="حذف حساب '+esc(u.name)+'">حذف الحساب</button></div></li>'}).join('');
   }
   function markRevSeen(){if(!sid||!can('users_manage'))return;var last=revList().map(joinedAt).filter(Boolean).sort().pop();
     if(last&&(!S.rvSeen||last>S.rvSeen)){S.rvSeen=last;api('rv_seen',{at:last})}}
@@ -1429,6 +1465,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   document.querySelectorAll('[data-rvs]').forEach(function(b){b.onclick=function(){rvSort=b.dataset.rvs;
     document.querySelectorAll('[data-rvs]').forEach(function(x){x.setAttribute('aria-pressed',x===b)});renderReviewers()}});
   $('rv-list').addEventListener('click',function(e){
+    var ed=e.target.closest('[data-rvedit]');if(ed){openRvForm(+ed.dataset.rvedit);return}
     var t=e.target.closest('[data-rvblk]');
     if(t){var k=t.dataset.rvblk,id=+t.dataset.id,u=users.filter(function(x){return x.id===id})[0];if(!u)return;
       api('rv_block',{id:id,k:k}).then(function(j){if(!j.ok)return fail(j);
@@ -1609,11 +1646,9 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     $('st-more').innerHTML=rs.length>stShown?'يُعرض '+stShown+' من '+rs.length+' • <button class="sbtn" type="button">عرض المزيد</button>':(q?rs.length+' نتيجة':'');
   }
   function kvRowsSafe(rows){return rows.map(function(r){return '<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1]||'-')+'</dd>'}).join('')}
-  function refreshEmpTab(){var e=S.pub&&S.pub.emp;$('t-emp').hidden=!e;
-    if(e){$('e-ver-l').textContent=e.label;$('e-ver').type=e.isDate?'date':'text';$('e-ver').inputMode=e.isDate?'':'numeric';
-      $('e-ver-h').textContent='اكتب '+e.label+' كما هو مسجّل لدى المديرية، للتحقق من هويتك.'}
-    else if(!$('p-emp').hidden)tab('login')}
-  $('p-emp').addEventListener('submit',function(e){e.preventDefault();var pe=S.pub&&S.pub.emp;if(!pe){tab('login');return}
+  function refreshEmpTab(){var e=S.pub&&S.pub.emp;$('t-emp').hidden=false;
+    $('e-ver-h').textContent='اكتب تاريخ التولد (مثال: 1990/05/20) أو رقم الهوية، كما سجّلته في حسابك.'+(e&&e.staff&&e.staffLabel?' وإن كنت من موظفي القائمة المسجلة لدى المديرية فاكتب «'+e.staffLabel+'».':'')}
+  $('p-emp').addEventListener('submit',function(e){e.preventDefault();var pe={label:'تاريخ التولد أو رقم الهوية'};
     var id=$('e-id').value,ver=$('e-ver').value;
     var ok=[setErr('e-id',idnorm(id)?'':'يرجى إدخال الرقم الوظيفي'),setErr('e-ver',vnorm(ver)?'':'يرجى إدخال '+pe.label)].every(Boolean);if(!ok)return;
     msg('emp-msg','');
@@ -2415,6 +2450,39 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   $('sup-list').addEventListener('click',function(e){var b=e.target.closest('[data-done]');if(!b)return;b.disabled=true;
     api('support_status',{id:+b.dataset.id,done:b.dataset.done==='1'}).then(function(j){b.disabled=false;if(!j.ok)return fail(j);renderSupport();updateCards();toast(b.dataset.done==='1'?'تم تعليم الرسالة كمعالَجة':'أُعيد فتح الرسالة')})});
 
+
+  /* ---------- reviewers: the manager adds or edits an account (also adds the employee number / national id to older accounts) ---------- */
+  var rvEdit=null,RVF=['rf-name','rf-work','rf-job','rf-birth','rf-appt','rf-phone','rf-user','rf-pass','rf-emp','rf-nid'];
+  function ardSet(id,val){var inp=$(id);inp.value=val||'';var box=inp.previousElementSibling,ss=box&&box.querySelectorAll?box.querySelectorAll('select'):[];
+    if(ss.length!==3)return;var p=String(val||'').split('-');ss[0].value=p[2]?String(+p[2]):'';ss[1].value=p[1]?String(+p[1]):'';ss[2].value=p[0]||''}
+  function rvfClose(){$('rvf-m').hidden=true;document.body.classList.remove('fm-open')}
+  function openRvForm(id){
+    var u=id?users.filter(function(x){return x.id===id})[0]:null;rvEdit=u?u.id:null;
+    $('rvf-f').reset();msg('rvf-msg','');RVF.forEach(function(i){setErr(i,'')});
+    $('rvf-t').textContent=u?'تعديل المراجع':'إضافة مراجع';$('rvf-ok').textContent=u?'حفظ التعديل':'إنشاء الحساب';
+    $('rf-pass-h').textContent=u?'اتركها فارغة للإبقاء على كلمة المرور الحالية':'6 أحرف على الأقل';
+    setTimeout(function(){ardSet('rf-birth',u?u.birth:'')},20);
+    if(u){$('rf-name').value=u.name||'';$('rf-work').value=u.work||u.dept||'';$('rf-job').value=u.job||'';$('rf-appt').value=u.appt||'';
+      $('rf-phone').value=u.phone||'';$('rf-user').value=u.username||'';$('rf-emp').value=u.empId||'';$('rf-nid').value=u.nid||''}
+    $('rvf-m').hidden=false;document.body.classList.add('fm-open');$('rf-name').focus()}
+  $('rv-add').onclick=function(){openRvForm(null)};
+  $('rvf-x').onclick=rvfClose;$('rvf-c').onclick=rvfClose;
+  $('rvf-m').addEventListener('click',function(e){if(e.target===this)rvfClose()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('rvf-m').hidden)rvfClose()});
+  $('rvf-f').addEventListener('submit',function(e){e.preventDefault();
+    var g=function(i){return $(i).value.trim()},ph=digits(g('rf-phone')),em=g('rf-emp'),ni=digits(g('rf-nid')).split(' ').join(''),p=$('rf-pass').value;
+    var ok=[setErr('rf-name',g('rf-name').split(' ').filter(Boolean).length>=2?'':'يرجى كتابة الاسم الثنائي على الأقل'),setErr('rf-work',g('rf-work')?'':'يرجى كتابة مكان العمل'),
+      setErr('rf-job',$('rf-job').value?'':'يرجى اختيار العنوان الوظيفي'),setErr('rf-birth',birthErr($('rf-birth').value)),setErr('rf-appt',$('rf-appt').value?'':'يرجى اختيار نوع التعيين'),
+      setErr('rf-emp',/^[A-Za-z0-9]{1,20}$/.test(em)?'':'يرجى كتابة الرقم الوظيفي'),setErr('rf-nid',/^[0-9]{8,14}$/.test(ni)?'':'رقم الهوية غير صحيح (أرقام فقط، من 8 إلى 14 رقماً)'),
+      setErr('rf-phone',/^07[0-9]{9}$/.test(ph)?'':'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)'),
+      setErr('rf-user',/^[A-Za-z0-9_.]{4,20}$/.test(g('rf-user'))?'':'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)'),
+      setErr('rf-pass',(rvEdit&&!p)||p.length>=6?'':'كلمة المرور يجب ألا تقل عن 6 أحرف')].every(Boolean);
+    if(!ok)return;msg('rvf-msg','');
+    busy(this,function(){return api('rv_save',{id:rvEdit,name:g('rf-name'),work:g('rf-work'),job:$('rf-job').value,birth:$('rf-birth').value,appt:$('rf-appt').value,phone:ph,username:g('rf-user'),pass:p,empNo:em,nid:ni}).then(function(r){
+      if(!r.ok)return fail(r,'rvf-msg');
+      var was=rvEdit;rvfClose();renderReviewers();updateCards();toast(was?'تم حفظ بيانات المراجع':'تم إنشاء حساب المراجع')})});
+  });
+
   /* ---------- Arabic date / time pickers: the native inputs show English (mm/dd/yyyy, AM/PM), so they are swapped for selects.
      The original <input> stays in the page as type=hidden with the same id and the same value format (YYYY-MM-DD / HH:MM). ---------- */
   var AR_M=['كانون الثاني','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين الأول','تشرين الثاني','كانون الأول'];
@@ -2428,7 +2496,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       var isDate=inp.type==='date',val=inp.value,box=document.createElement('div'),Y=new Date().getFullYear(),sels;
       inp.setAttribute('data-ar','1');inp.type='hidden';
       if(isDate){
-        var y0,y1,desc=false;if(inp.id==='s-birth'){y0=Y-18;y1=Y-75;desc=true}else{y0=Y;y1=Y+2}
+        var y0,y1,desc=false;if(inp.id==='s-birth'||inp.id==='rf-birth'){y0=Y-18;y1=Y-75;desc=true}else{y0=Y;y1=Y+2}
         var ys=[];for(var y=y0;desc?y>=y1:y<=y1;y+=desc?-1:1)ys.push([y,ad(y)]);
         var ds=[],ms=[];for(var d=1;d<=31;d++)ds.push([d,ad(d)]);AR_M.forEach(function(m,i){ms.push([i+1,m])});
         sels=[mkSel('اليوم','اليوم',ds),mkSel('الشهر','الشهر',ms),mkSel('السنة','السنة',ys)];

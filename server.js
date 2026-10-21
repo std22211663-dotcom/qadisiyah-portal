@@ -221,14 +221,22 @@ function stateFor(me) {
 function dirSize(d) { let t = 0; try { for (const f of fs.readdirSync(d)) t += fs.statSync(path.join(d, f)).size; } catch (e) { } return t; }
 function pubState() {
   const m = kvGet('staff_meta', null);
-  if (!m) return { emp: null };
-  const label = m.cols[m.map.ver] || 'رمز التحقق';
-  return { emp: { label, isDate: /تولد|ميلاد|ولاد|date|dob/i.test(label) } };
+  return { emp: { label: 'تاريخ التولد أو رقم الهوية', isDate: false, staff: !!m, staffLabel: m ? (m.cols[m.map.ver] || 'رمز التحقق') : '' } };
 }
 
 /* ----------------------------------------------------------------- actions */
 const A = {};
 const perm = (me, p) => { if (!hasPerm(me, p)) throw new Fail('ليست لديك صلاحية لهذا الإجراء', null, 403); };
+
+/* employee number + national id: both are optional ways to prove who you are when the password is forgotten */
+function idFields(b, id, pre) {
+  const empNo = idnorm(b.empNo), nid = digits(str(b.nid, 20)).replace(/\s+/g, '');
+  need(/^[a-z0-9]{1,20}$/.test(empNo), 'يرجى كتابة الرقم الوظيفي (أرقام أو أحرف إنجليزية)', pre + '-emp');
+  need(/^[0-9]{8,14}$/.test(nid), 'رقم الهوية غير صحيح (أرقام فقط، من 8 إلى 14 رقماً)', pre + '-nid');
+  need(!q('SELECT 1 FROM users WHERE emp_id=? AND id<>?').get(empNo, id || 0), 'الرقم الوظيفي مسجل مسبقاً', pre + '-emp');
+  need(!q("SELECT 1 FROM users WHERE json_extract(data,'$.nid')=? AND id<>?").get(nid, id || 0), 'رقم الهوية مسجل مسبقاً', pre + '-nid');
+  return { empNo, nid };
+}
 
 /* --- sign-in --- */
 A.login = (me, b, ctx) => {
@@ -241,13 +249,19 @@ A.login = (me, b, ctx) => {
   cleared(key); ctx.startSession(u.id); logAct('login', '', u); return { me: u };
 };
 A.emp_login = (me, b, ctx) => {
-  const m = kvGet('staff_meta', null); need(m, 'الدخول بالرقم الوظيفي غير مفعّل حالياً');
-  const k = idnorm(b.id), ver = String(b.ver || ''); need(k, 'يرجى إدخال الرقم الوظيفي', 'e-id'); need(vnorm(ver), 'يرجى إدخال ' + (m.cols[m.map.ver] || 'رمز التحقق'), 'e-ver');
-  const key = 'e:' + ctx.ip, wait = throttled(key);
+  const m = kvGet('staff_meta', null);
+  const k = idnorm(b.id), ver = String(b.ver || ''); need(k, 'يرجى إدخال الرقم الوظيفي', 'e-id'); need(vnorm(ver), 'يرجى إدخال تاريخ التولد أو رقم الهوية', 'e-ver');
+  const key = 'e:' + ctx.ip, key2 = 'ea:' + k, wait = Math.max(throttled(key), throttled(key2));
   need(!wait, 'محاولات خاطئة كثيرة. حاول مرة أخرى بعد ' + wait + ' دقيقة.');
-  const r = q('SELECT row FROM staff WHERE k=?').get(k), row = r && JSON.parse(r.row);
-  if (!row || !vmatch(row[m.map.ver], ver)) { failed(key); logAct('login_fail', 'رقم وظيفي: ' + String(b.id).slice(0, 20)); throw new Fail('الرقم الوظيفي أو ' + (m.cols[m.map.ver] || 'بيانات التحقق') + ' غير صحيح.'); }
-  cleared(key);
+  const r = m && q('SELECT row FROM staff WHERE k=?').get(k), row = r && JSON.parse(r.row);
+  if (!row || !vmatch(row[m.map.ver], ver)) {
+    /* not in the imported staff list: try a registered reviewer account (verified by birth date or national id) */
+    const ru = rowUser(q("SELECT * FROM users WHERE emp_id=? AND type='reviewer'").get(k));
+    const nidOk = !!(ru && ru.nid && digits(ver).replace(/\s+/g, '') === ru.nid), birthOk = !!(ru && ru.birth && vmatch(ru.birth, ver));
+    if (ru && (nidOk || birthOk)) { cleared(key); cleared(key2); ctx.startSession(ru.id); logAct('login', 'بالرقم الوظيفي', ru); return { me: userById(ru.id) }; }
+    failed(key); failed(key2); logAct('login_fail', 'رقم وظيفي: ' + String(b.id).slice(0, 20)); throw new Fail('الرقم الوظيفي أو بيانات التحقق غير صحيحة.');
+  }
+  cleared(key); cleared(key2);
   const g = i => (i > -1 ? row[i] : '') || '', info = {}; m.cols.forEach((c, i) => { info[c] = row[i]; });
   const base = { name: g(m.map.name) || ('موظف ' + k), work: g(m.map.work), dept: g(m.map.work), job: g(m.map.job), appt: g(m.map.appt), info, infoCols: m.cols, infoKeys: { id: m.cols[m.map.id], ver: m.cols[m.map.ver] }, lastLogin: now() };
   const phone = digits(g(m.map.phone)).replace(/\s+/g, '');
@@ -272,9 +286,10 @@ A.signup = (me, b) => {
   need(/^07\d{9}$/.test(ph), 'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)', 's-phone');
   need(/^[A-Za-z0-9_.]{4,20}$/.test(un), 'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)', 's-user');
   need(p.length >= 6, 'كلمة المرور يجب ألا تقل عن 6 أحرف', 's-pass');
+  const ids = idFields(b, null, 's');
   need(!q('SELECT 1 FROM users WHERE username=? COLLATE NOCASE').get(un), 'اسم المستخدم مستخدم مسبقاً', 's-user');
   need(!q('SELECT 1 FROM users WHERE phone=?').get(ph), 'رقم الهاتف مسجل مسبقاً', 's-phone');
-  const u = { type: 'reviewer', role: 'reviewer', name: n, work: w, job: j, birth, appt: a, phone: ph, username: un, dept: w, perms: ROLES.reviewer.perms.slice(), created: now(), _pass: hashPass(p) };
+  const u = { type: 'reviewer', role: 'reviewer', name: n, work: w, job: j, birth, appt: a, phone: ph, username: un, dept: w, empId: ids.empNo, nid: ids.nid, perms: ROLES.reviewer.perms.slice(), created: now(), _pass: hashPass(p) };
   u.id = saveUser(u); logAct('signup', n + ' — ' + w, u); return { username: un };
 };
 A.logout = (me, b, ctx) => { if (me) logAct('logout', '', me); ctx.endSession(); return {}; };
@@ -391,6 +406,24 @@ A.unit_save = (me, b) => {
   const rec = Object.assign(prev || { type: 'admin', role: 'unit', name: unit, dept: unit, unit, sup: f.sup, phone: '', perms: ROLES.unit.perms.slice(), created: now() }, { username: un, holder: h });
   if (p) rec._pass = hashPass(p);
   saveUser(rec); logAct(prev ? 'user_edit' : 'user_add', unit + ' (حساب قسم/شعبة)', me); return {};
+};
+A.rv_save = (me, b) => {
+  perm(me, 'users_manage');
+  const id = b.id ? +b.id : null, n = str(b.name, 80), w = str(b.work, 120), j = str(b.job, 40), birth = str(b.birth, 10), a = str(b.appt, 40), ph = digits(str(b.phone, 20)), un = str(b.username, 20), p = String(b.pass || '');
+  const prev = id ? userById(id) : null; if (id) need(prev && prev.type === 'reviewer', 'المراجع غير موجود');
+  need(words(n) >= 2, 'يرجى كتابة الاسم الثنائي على الأقل', 'rf-name'); need(w, 'يرجى كتابة مكان العمل', 'rf-work');
+  need(['مدرس', 'معلم', 'إداري'].includes(j), 'يرجى اختيار العنوان الوظيفي', 'rf-job');
+  const age = (Date.now() - new Date(birth)) / 31557600000; need(birth && age >= 18 && age <= 75, 'تاريخ التولد غير صحيح', 'rf-birth');
+  need(['ملاك دائم', 'عقد', 'أجور', 'محاضر مجاني'].includes(a), 'يرجى اختيار نوع التعيين', 'rf-appt');
+  need(/^07[0-9]{9}$/.test(ph), 'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)', 'rf-phone');
+  need(/^[A-Za-z0-9_.]{4,20}$/.test(un), 'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)', 'rf-user');
+  need((id && !p) || p.length >= 6, 'كلمة المرور يجب ألا تقل عن 6 أحرف', 'rf-pass');
+  need(!q('SELECT 1 FROM users WHERE username=? COLLATE NOCASE AND id<>?').get(un, id || 0), 'اسم المستخدم مستخدم مسبقاً', 'rf-user');
+  need(!q('SELECT 1 FROM users WHERE phone=? AND id<>?').get(ph, id || 0), 'رقم الهاتف مسجل مسبقاً', 'rf-phone');
+  const ids = idFields(b, id, 'rf');
+  const rec = Object.assign(prev || { type: 'reviewer', role: 'reviewer', perms: ROLES.reviewer.perms.slice(), created: now() }, { name: n, work: w, job: j, birth, appt: a, phone: ph, username: un, dept: w, empId: ids.empNo, nid: ids.nid });
+  if (p) rec._pass = hashPass(p); else if (!prev) throw new Fail('كلمة المرور يجب ألا تقل عن 6 أحرف', 'rf-pass');
+  saveUser(rec); logAct(id ? 'user_edit' : 'user_add', n + ' (مراجع)', me); return {};
 };
 A.rv_block = (me, b) => {
   perm(me, 'users_manage'); const u = userById(b.id); need(u && u.type === 'reviewer', 'المراجع غير موجود'); const k = b.k === 'int' ? 'int' : 'req';

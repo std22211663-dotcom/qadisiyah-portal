@@ -299,6 +299,29 @@ A.change_pass = (me, b) => {
   me._pass = hashPass(String(b.new)); saveUser(me); logAct('pass_change', '', me); return {};
 };
 
+/* --- reviewer: my own profile --- */
+A.profile_save = (me, b) => {
+  need(me.type === 'reviewer', 'هذا الإجراء للمراجعين فقط');
+  const n = str(b.name, 80), w = str(b.work, 120), j = str(b.job, 40), birth = str(b.birth, 10), a = str(b.appt, 40), ph = digits(str(b.phone, 20)), un = str(b.username, 20);
+  need(words(n) >= 2, 'يرجى كتابة الاسم الثنائي على الأقل', 'pf-name'); need(w, 'يرجى كتابة مكان العمل', 'pf-work');
+  need(['مدرس', 'معلم', 'إداري'].includes(j), 'يرجى اختيار العنوان الوظيفي', 'pf-job');
+  const age = (Date.now() - new Date(birth)) / 31557600000; need(birth && age >= 18 && age <= 75, 'تاريخ التولد غير صحيح', 'pf-birth');
+  need(['ملاك دائم', 'عقد', 'أجور', 'محاضر مجاني'].includes(a), 'يرجى اختيار نوع التعيين', 'pf-appt');
+  need(/^07[0-9]{9}$/.test(ph), 'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)', 'pf-phone');
+  need(/^[A-Za-z0-9_.]{4,20}$/.test(un), 'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)', 'pf-user');
+  need(!q('SELECT 1 FROM users WHERE username=? COLLATE NOCASE AND id<>?').get(un, me.id), 'اسم المستخدم مستخدم مسبقاً', 'pf-user');
+  need(!q('SELECT 1 FROM users WHERE phone=? AND id<>?').get(ph, me.id), 'رقم الهاتف مسجل مسبقاً', 'pf-phone');
+  const ids = idFields(b, me.id, 'pf');
+  const staffAcc = !!me.info;   // created from the imported staff list: its employee number is the link to that list
+  if (staffAcc) need(ids.empNo === me.empId, 'الرقم الوظيفي مرتبط بقائمة الموظفين ولا يمكن تغييره', 'pf-emp');
+  else if (ids.empNo !== (me.empId || '') || ids.nid !== (me.nid || '') || birth !== (me.birth || '')) {
+    /* these three are what proves identity when the password is forgotten, so changing them needs the current password */
+    need(checkPass(String(b.curPass || ''), me._pass), 'أدخل كلمة المرور الحالية لتغيير الرقم الوظيفي أو الهوية أو التولد', 'pf-pass');
+  }
+  Object.assign(me, { name: n, work: w, job: j, birth, appt: a, phone: ph, username: un, dept: w, empId: ids.empNo, nid: ids.nid });
+  saveUser(me); logAct('profile_edit', 'تعديل المراجع لمعلوماته', me); return {};
+};
+
 /* --- reviewer --- */
 function closedFor(me, k) { const c = svc(); if (!c[k]) return 'استقبال ' + KIND[k] + ' متوقف حالياً. ' + c.msg; if (me.block && me.block[k]) return 'تم إيقاف تقديم ' + KIND[k] + ' على حسابك مؤقتاً من قبل المديرية.'; return ''; }
 A.req_submit = (me, b) => {

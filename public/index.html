@@ -692,6 +692,11 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
         <span><b>متابعة الطلب</b><small>معرفة حالة الطلبات المقدمة</small></span>
         <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
+      <button class="card c2" data-s="معلوماتي" data-perm="track" data-go="profile">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <span><b>معلوماتي</b><small>عرض بياناتك الكاملة وتعديلها</small></span>
+        <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
       <button class="card c4" data-s="طلبات المراجعين" data-perm="requests_view" data-go="visitors">
         <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.870"/><path d="M16 3.130a4 4 0 0 1 0 7.750"/></svg></span>
         <span><b>طلبات المراجعين</b><small>عرض ومعالجة طلبات المراجعين</small></span>
@@ -869,6 +874,48 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   <div class="hello"><h1>المشاكل المرسلة</h1><p>الرسائل التي أرسلها المستخدمون من زر «الدعم الفني» في صفحة الدخول.</p></div>
   <div class="bar"><div class="seg" id="sup-seg" role="group" aria-label="تصفية الرسائل"></div></div>
   <ul class="ulist" id="sup-list"></ul>
+</main>
+
+<main class="main" id="v-profile" hidden>
+  <button class="back" data-back="home"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>رجوع</button>
+  <div class="hello"><h1>معلوماتي</h1><p>بياناتك المسجّلة في البوابة. يمكنك تعديلها في أي وقت.</p></div>
+  <div class="closed" id="pf-warn" hidden><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><div><b>أكمل بياناتك</b><p>أضف الرقم الوظيفي ورقم الهوية لتتمكن من الدخول بهما إذا نسيت كلمة المرور.</p></div></div>
+  <section class="box" aria-labelledby="pf-t">
+    <h2 id="pf-t">البيانات الشخصية</h2>
+    <dl class="kv" id="pf-view"></dl>
+    <div class="acts"><button class="btn auto" type="button" id="pf-edit"><span>تعديل المعلومات</span></button></div>
+    <form id="pf-f" novalidate style="padding:0" hidden>
+      <div class="formmsg" id="pf-msg" role="alert" hidden></div>
+      <div class="field"><label for="pf-name">الاسم الكامل</label><input id="pf-name" maxlength="80"><div class="err" id="pf-name-e"></div></div>
+      <div class="row2">
+        <div class="field"><label for="pf-work">مكان العمل</label><input id="pf-work" maxlength="120"><div class="err" id="pf-work-e"></div></div>
+        <div class="field"><label for="pf-job">العنوان الوظيفي</label><select id="pf-job"><option value="">اختر...</option><option>مدرس</option><option>معلم</option><option>إداري</option></select><div class="err" id="pf-job-e"></div></div>
+      </div>
+      <div class="field"><label for="pf-birth">التولد</label><input id="pf-birth" type="date" dir="ltr" style="text-align:right"><div class="err" id="pf-birth-e"></div></div>
+      <div class="row2">
+        <div class="field"><label for="pf-appt">نوع التعيين</label><select id="pf-appt"><option value="">اختر...</option><option>ملاك دائم</option><option>عقد</option><option>أجور</option><option>محاضر مجاني</option></select><div class="err" id="pf-appt-e"></div></div>
+        <div class="field"><label for="pf-emp">الرقم الوظيفي</label><input id="pf-emp" dir="ltr" style="text-align:right" autocomplete="off"><div class="help" id="pf-emp-h">للدخول به عند نسيان كلمة المرور</div><div class="err" id="pf-emp-e"></div></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="pf-nid">رقم الهوية</label><input id="pf-nid" inputmode="numeric" dir="ltr" style="text-align:right" autocomplete="off"><div class="err" id="pf-nid-e"></div></div>
+        <div class="field"><label for="pf-phone">رقم الهاتف</label><input id="pf-phone" type="tel" inputmode="numeric" dir="ltr" style="text-align:right"><div class="help">مثال: 07701234567</div><div class="err" id="pf-phone-e"></div></div>
+      </div>
+      <div class="field"><label for="pf-user">اسم المستخدم</label><input id="pf-user" dir="ltr" style="text-align:right" autocomplete="off"><div class="err" id="pf-user-e"></div></div>
+      <div class="field" id="pf-pass-w"><label for="pf-pass">كلمة المرور الحالية</label><input id="pf-pass" type="password" autocomplete="current-password"><div class="help">مطلوبة فقط عند تغيير الرقم الوظيفي أو رقم الهوية أو التولد</div><div class="err" id="pf-pass-e"></div></div>
+      <div class="acts"><button class="btn auto" type="submit"><span>حفظ التعديلات</span></button><button class="btn sec auto" type="button" id="pf-cancel">إلغاء</button></div>
+    </form>
+  </section>
+  <section class="box" aria-labelledby="pw-t" style="margin-top:16px">
+    <h2 id="pw-t">تغيير كلمة المرور</h2>
+    <form id="pw-f" novalidate style="padding:0">
+      <div class="field"><label for="pw-old">كلمة المرور الحالية</label><input id="pw-old" type="password" autocomplete="current-password"><div class="err" id="pw-old-e"></div></div>
+      <div class="row2">
+        <div class="field"><label for="pw-new">كلمة المرور الجديدة</label><input id="pw-new" type="password" autocomplete="new-password"><div class="help">8 أحرف أو أرقام على الأقل</div><div class="err" id="pw-new-e"></div></div>
+        <div class="field"><label for="pw-new2">تأكيد كلمة المرور الجديدة</label><input id="pw-new2" type="password" autocomplete="new-password"><div class="err" id="pw-new2-e"></div></div>
+      </div>
+      <div class="acts"><button class="btn auto" type="submit"><span>تغيير كلمة المرور</span></button></div>
+    </form>
+  </section>
 </main>
 
 <main class="main" id="v-audit" hidden>
@@ -1221,8 +1268,8 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     inquiry:{label:'موظف استعلامات',perms:['requests_view','settings']},
     unit:{label:'حساب قسم / شعبة',perms:['unit_inbox','settings']}
   };
-  var NEED={data:'data_manage',trash:'data_manage',audit:'audit_view',about:'settings',interview:'interview',meetings:'meetings',track:'track',apply:'apply',visitors:'requests_view',settings:'settings',users:'users_manage',reviewers:'users_manage',inbox:'unit_inbox',staff:'users_manage',support:'users_manage'};
-  var VIEWS=['home','apply','track','interview','meetings','data','trash','audit','about','visitors','settings','users','reviewers','inbox','staff','support'];
+  var NEED={data:'data_manage',trash:'data_manage',audit:'audit_view',about:'settings',interview:'interview',meetings:'meetings',track:'track',apply:'apply',visitors:'requests_view',settings:'settings',users:'users_manage',reviewers:'users_manage',inbox:'unit_inbox',staff:'users_manage',support:'users_manage',profile:'track'};
+  var VIEWS=['home','apply','track','interview','meetings','data','trash','audit','about','visitors','settings','users','reviewers','inbox','staff','support','profile'];
 
   var users=[],sid=null,editId=null,ORG={};
   var authEl=$('auth'),appEl=$('app');
@@ -1259,6 +1306,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     if(v==='inbox')renderInbox();
     if(v==='staff')renderStaff();
     if(v==='support')renderSupport();
+    if(v==='profile')renderProfile();
     if(v==='apply')renderApply();
     if(v==='visitors')renderVisitors();
     if(v==='track')renderTrack();
@@ -1992,7 +2040,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     var rs=all.filter(function(r){return r.uid===sid&&(!q||r.no.toLowerCase().indexOf(q)>-1||r.type.toLowerCase().indexOf(q)>-1)}).reverse();
     $('tlist').innerHTML=rs.length?rs.map(function(r){return card(r,false)}).join(''):'<li class="box empty" style="margin:0">لا توجد طلبات. يمكنك تقديم طلب من «تقديم طلب».</li>';
   }
-  function rerender(){if(curView==='apply')applyClosed('req');if(curView==='visitors')renderVisitors();if(curView==='track')renderTrack();if(curView==='interview')renderInterview();if(curView==='meetings')renderMeetings();if(curView==='data')renderData();if(curView==='trash')renderTrash();if(curView==='audit')renderAudit();if(curView==='users')renderUsers();if(curView==='reviewers')renderReviewers();if(curView==='support')renderSupport();if(curView==='inbox')renderInbox();if(curView==='settings'&&can('users_manage'))renderSvc();refreshBell();updateCards()}
+  function rerender(){if(curView==='apply')applyClosed('req');if(curView==='visitors')renderVisitors();if(curView==='track')renderTrack();if(curView==='interview')renderInterview();if(curView==='meetings')renderMeetings();if(curView==='data')renderData();if(curView==='trash')renderTrash();if(curView==='audit')renderAudit();if(curView==='users')renderUsers();if(curView==='reviewers')renderReviewers();if(curView==='support')renderSupport();if(curView==='profile'&&$('pf-f').hidden)renderProfile();if(curView==='inbox')renderInbox();if(curView==='settings'&&can('users_manage'))renderSvc();refreshBell();updateCards()}
   function onAct(e){
     var b=e.target.closest('[data-act]');if(!b)return;var id=+b.dataset.id,a=b.dataset.act;
     if(a==='toggle'){openId=openId===id?null:id;rerender();var t=document.querySelector('[data-act="toggle"][data-id="'+id+'"]');if(t)t.focus();return}
@@ -2200,7 +2248,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   var VERSION='2.0.0',RELEASED='14 تشرين الأول 2026',BAKV=2;
   var ACT={
     login:['تسجيل دخول','auth'],logout:['تسجيل خروج','auth'],login_fail:['محاولة دخول فاشلة','auth'],signup:['إنشاء حساب مراجع','auth'],
-    req_submit:['تقديم طلب','req'],support_submit:['رسالة دعم فني','req'],support_done:['معالجة رسالة دعم فني','dec'],int_submit:['تقديم طلب مقابلة','req'],
+    req_submit:['تقديم طلب','req'],support_submit:['رسالة دعم فني','req'],profile_edit:['تعديل معلومات المراجع','req'],support_done:['معالجة رسالة دعم فني','dec'],int_submit:['تقديم طلب مقابلة','req'],
     req_approve:['موافقة على طلب','dec'],req_reject:['رفض طلب','dec'],int_schedule:['تحديد موعد مقابلة','dec'],int_resched:['تعديل موعد مقابلة','dec'],
     user_add:['إضافة مستخدم','adm'],user_edit:['تعديل مستخدم','adm'],user_del:['حذف مستخدم','adm'],
     item_del:['حذف طلب','adm'],item_restore:['استرجاع طلب محذوف','adm'],backup:['تصدير نسخة احتياطية','adm'],svc_toggle:['تشغيل/إيقاف الاستقبال','adm'],svc_msg:['تعديل رسالة الاعتذار','adm'],rv_block:['إيقاف/تفعيل مراجع','adm'],req_form:['هامش وتحويل طلب','dec'],unit_route:['توجيه طلب إلى شعبة','dec'],staff_import:['استيراد قائمة الموظفين','adm'],stamp_names:['تغيير اسم المدير أو المعاون','adm'],staff_delete:['حذف قائمة الموظفين','adm'],unit_done:['إنجاز طلب محوّل','dec'],req_pdf:['تحميل نموذج PDF','adm'],req_print:['تحميل نسخة طباعة','adm'],restore:['استعادة نسخة احتياطية','adm']
@@ -2483,6 +2531,45 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       var was=rvEdit;rvfClose();renderReviewers();updateCards();toast(was?'تم حفظ بيانات المراجع':'تم إنشاء حساب المراجع')})});
   });
 
+
+  /* ---------- reviewer profile: view and edit my own data, change my password ---------- */
+  function pfRows(u){return [['الاسم',u.name],['مكان العمل',u.work||u.dept],['العنوان الوظيفي',u.job],['تاريخ التولد',u.birth?fdate(u.birth):''],['نوع التعيين',u.appt],
+    ['الرقم الوظيفي',u.empId],['رقم الهوية',u.nid],['رقم الهاتف',u.phone],['اسم المستخدم',u.username],['تاريخ إنشاء الحساب',u.created?fdate(u.created):'']]}
+  function renderProfile(){var u=cur();if(!u)return;
+    $('pf-view').innerHTML=pfRows(u).map(function(r){return '<dt>'+r[0]+'</dt><dd>'+(r[1]?'<span class="'+(/^[0-9A-Za-z@_.]+$/.test(r[1])?'ltr':'')+'">'+esc(r[1])+'</span>':'<span class="help">غير مسجّل</span>')+'</dd>'}).join('');
+    $('pf-warn').hidden=!!(u.empId&&u.nid)}
+  var PF=['pf-name','pf-work','pf-job','pf-birth','pf-appt','pf-phone','pf-user','pf-pass','pf-emp','pf-nid'];
+  function pfOpen(){var u=cur();if(!u)return;
+    $('pf-f').reset();msg('pf-msg','');PF.forEach(function(i){setErr(i,'')});
+    setTimeout(function(){ardSet('pf-birth',u.birth||'')},20);
+    $('pf-name').value=u.name||'';$('pf-work').value=u.work||u.dept||'';$('pf-job').value=u.job||'';$('pf-appt').value=u.appt||'';
+    $('pf-phone').value=u.phone||'';$('pf-user').value=u.username||'';$('pf-emp').value=u.empId||'';$('pf-nid').value=u.nid||'';
+    var staffAcc=!!u.info;$('pf-emp').readOnly=staffAcc;$('pf-pass-w').hidden=staffAcc;
+    $('pf-emp-h').textContent=staffAcc?'مرتبط بقائمة الموظفين ولا يمكن تغييره':'للدخول به عند نسيان كلمة المرور';
+    $('pf-f').hidden=false;$('pf-edit').hidden=true;$('pf-name').focus()}
+  function pfClose(){$('pf-f').hidden=true;$('pf-edit').hidden=false;renderProfile()}
+  $('pf-edit').onclick=pfOpen;$('pf-cancel').onclick=pfClose;
+  $('pf-f').addEventListener('submit',function(e){e.preventDefault();
+    var g=function(i){return $(i).value.trim()},ph=digits(g('pf-phone')),em=g('pf-emp'),ni=digits(g('pf-nid')).split(' ').join('');
+    var ok=[setErr('pf-name',g('pf-name').split(' ').filter(Boolean).length>=2?'':'يرجى كتابة الاسم الثنائي على الأقل'),setErr('pf-work',g('pf-work')?'':'يرجى كتابة مكان العمل'),
+      setErr('pf-job',$('pf-job').value?'':'يرجى اختيار العنوان الوظيفي'),setErr('pf-birth',birthErr($('pf-birth').value)),setErr('pf-appt',$('pf-appt').value?'':'يرجى اختيار نوع التعيين'),
+      setErr('pf-emp',/^[A-Za-z0-9]{1,20}$/.test(em)?'':'يرجى كتابة الرقم الوظيفي'),setErr('pf-nid',/^[0-9]{8,14}$/.test(ni)?'':'رقم الهوية غير صحيح (أرقام فقط، من 8 إلى 14 رقماً)'),
+      setErr('pf-phone',/^07[0-9]{9}$/.test(ph)?'':'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)'),
+      setErr('pf-user',/^[A-Za-z0-9_.]{4,20}$/.test(g('pf-user'))?'':'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)')].every(Boolean);
+    if(!ok)return;msg('pf-msg','');
+    busy(this,function(){return api('profile_save',{name:g('pf-name'),work:g('pf-work'),job:$('pf-job').value,birth:$('pf-birth').value,appt:$('pf-appt').value,phone:ph,username:g('pf-user'),empNo:em,nid:ni,curPass:$('pf-pass').value}).then(function(r){
+      if(!r.ok)return fail(r,'pf-msg');
+      pfClose();render('profile');toast('تم حفظ معلوماتك')})});
+  });
+  $('pw-f').addEventListener('submit',function(e){e.preventDefault();
+    var o=$('pw-old').value,n=$('pw-new').value,n2=$('pw-new2').value;
+    var ok=[setErr('pw-old',o?'':'يرجى إدخال كلمة المرور الحالية'),setErr('pw-new',n.length>=8?'':'كلمة المرور الجديدة يجب ألا تقل عن 8 أحرف'),setErr('pw-new2',n2===n&&n2?'':'كلمتا المرور غير متطابقتين')].every(Boolean);
+    if(!ok)return;
+    busy(this,function(){return api('change_pass',{old:o,new:n}).then(function(j){
+      if(!j.ok){if(j.field==='cp-old')return setErr('pw-old',j.error);if(j.field==='cp-new')return setErr('pw-new',j.error);return toast(j.error)}
+      $('pw-f').reset();toast('تم تغيير كلمة المرور')})});
+  });
+
   /* ---------- Arabic date / time pickers: the native inputs show English (mm/dd/yyyy, AM/PM), so they are swapped for selects.
      The original <input> stays in the page as type=hidden with the same id and the same value format (YYYY-MM-DD / HH:MM). ---------- */
   var AR_M=['كانون الثاني','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين الأول','تشرين الثاني','كانون الأول'];
@@ -2496,7 +2583,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       var isDate=inp.type==='date',val=inp.value,box=document.createElement('div'),Y=new Date().getFullYear(),sels;
       inp.setAttribute('data-ar','1');inp.type='hidden';
       if(isDate){
-        var y0,y1,desc=false;if(inp.id==='s-birth'||inp.id==='rf-birth'){y0=Y-18;y1=Y-75;desc=true}else{y0=Y;y1=Y+2}
+        var y0,y1,desc=false;if(inp.id==='s-birth'||inp.id==='rf-birth'||inp.id==='pf-birth'){y0=Y-18;y1=Y-75;desc=true}else{y0=Y;y1=Y+2}
         var ys=[];for(var y=y0;desc?y>=y1:y<=y1;y+=desc?-1:1)ys.push([y,ad(y)]);
         var ds=[],ms=[];for(var d=1;d<=31;d++)ds.push([d,ad(d)]);AR_M.forEach(function(m,i){ms.push([i+1,m])});
         sels=[mkSel('اليوم','اليوم',ds),mkSel('الشهر','الشهر',ms),mkSel('السنة','السنة',ys)];

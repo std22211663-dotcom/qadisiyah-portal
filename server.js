@@ -228,6 +228,14 @@ function pubState() {
 const A = {};
 const perm = (me, p) => { if (!hasPerm(me, p)) throw new Fail('ليست لديك صلاحية لهذا الإجراء', null, 403); };
 
+/* the same person must not hold two reviewer accounts: same name (ignoring hamza/diacritics/spacing) + same birth date */
+const nameKey = x => str(x).replace(/[\u064B-\u065F\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/\s+/g, ' ').toLowerCase();
+function noDupPerson(n, birth, id, field) {
+  const key = nameKey(n);
+  const hit = q("SELECT data FROM users WHERE type='reviewer' AND id<>? AND json_extract(data,'$.birth')=?").all(id || 0, birth).some(r => nameKey(JSON.parse(r.data).name) === key);
+  need(!hit, 'يوجد حساب مسجل بالاسم وتاريخ التولد نفسيهما. إن كان حسابك فسجّل الدخول، أو استخدم تبويب «الرقم الوظيفي»، أو راسل الدعم الفني.', field);
+}
+
 /* employee number + national id: both are optional ways to prove who you are when the password is forgotten */
 function idFields(b, id, pre) {
   const empNo = idnorm(b.empNo), nid = digits(str(b.nid, 20)).replace(/\s+/g, '');
@@ -282,6 +290,7 @@ A.signup = (me, b) => {
   need(words(n) >= 2, 'يرجى كتابة الاسم الثنائي على الأقل', 's-name'); need(w, 'يرجى كتابة مكان العمل', 's-work');
   need(['مدرس', 'معلم', 'إداري'].includes(j), 'يرجى اختيار العنوان الوظيفي', 's-job');
   const age = (Date.now() - new Date(birth)) / 31557600000; need(birth && age >= 18 && age <= 75, 'تاريخ التولد غير صحيح', 's-birth');
+  noDupPerson(n, birth, null, 's-name');
   need(['ملاك دائم', 'عقد', 'أجور', 'محاضر مجاني'].includes(a), 'يرجى اختيار نوع التعيين', 's-appt');
   need(/^07\d{9}$/.test(ph), 'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)', 's-phone');
   need(/^[A-Za-z0-9_.]{4,20}$/.test(un), 'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)', 's-user');
@@ -306,6 +315,7 @@ A.profile_save = (me, b) => {
   need(words(n) >= 2, 'يرجى كتابة الاسم الثنائي على الأقل', 'pf-name'); need(w, 'يرجى كتابة مكان العمل', 'pf-work');
   need(['مدرس', 'معلم', 'إداري'].includes(j), 'يرجى اختيار العنوان الوظيفي', 'pf-job');
   const age = (Date.now() - new Date(birth)) / 31557600000; need(birth && age >= 18 && age <= 75, 'تاريخ التولد غير صحيح', 'pf-birth');
+  noDupPerson(n, birth, me.id, 'pf-name');
   need(['ملاك دائم', 'عقد', 'أجور', 'محاضر مجاني'].includes(a), 'يرجى اختيار نوع التعيين', 'pf-appt');
   need(/^07[0-9]{9}$/.test(ph), 'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)', 'pf-phone');
   need(/^[A-Za-z0-9_.]{4,20}$/.test(un), 'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)', 'pf-user');
@@ -437,6 +447,7 @@ A.rv_save = (me, b) => {
   need(words(n) >= 2, 'يرجى كتابة الاسم الثنائي على الأقل', 'rf-name'); need(w, 'يرجى كتابة مكان العمل', 'rf-work');
   need(['مدرس', 'معلم', 'إداري'].includes(j), 'يرجى اختيار العنوان الوظيفي', 'rf-job');
   const age = (Date.now() - new Date(birth)) / 31557600000; need(birth && age >= 18 && age <= 75, 'تاريخ التولد غير صحيح', 'rf-birth');
+  noDupPerson(n, birth, id, 'rf-name');
   need(['ملاك دائم', 'عقد', 'أجور', 'محاضر مجاني'].includes(a), 'يرجى اختيار نوع التعيين', 'rf-appt');
   need(/^07[0-9]{9}$/.test(ph), 'رقم الهاتف غير صحيح (يبدأ بـ 07 ويتكون من 11 رقماً)', 'rf-phone');
   need(/^[A-Za-z0-9_.]{4,20}$/.test(un), 'اسم المستخدم: أحرف إنجليزية وأرقام فقط (4 إلى 20)', 'rf-user');

@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS users(
 CREATE TABLE IF NOT EXISTS requests(id INTEGER PRIMARY KEY, no TEXT NOT NULL UNIQUE, uid INTEGER, status TEXT, data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS interviews(id INTEGER PRIMARY KEY, no TEXT NOT NULL UNIQUE, uid INTEGER, target TEXT, status TEXT, data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS trash(tid INTEGER PRIMARY KEY, kind TEXT NOT NULL, data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS support(id INTEGER PRIMARY KEY, status TEXT NOT NULL, ip TEXT, created TEXT NOT NULL, data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS log(id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, code TEXT, uid INTEGER, name TEXT, role TEXT, detail TEXT);
 CREATE TABLE IF NOT EXISTS files(id TEXT PRIMARY KEY, name TEXT, type TEXT, size INTEGER, created TEXT);
 CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY, v TEXT);
@@ -115,6 +116,7 @@ const allReqs = () => q('SELECT * FROM requests ORDER BY id').all().map(rowRec);
 const allInts = () => q('SELECT * FROM interviews ORDER BY id').all().map(r => Object.assign(rowRec(r), { target: r.target }));
 function saveReq(r) { const { id, no, uid, status, ...d } = r; q('INSERT INTO requests(id,no,uid,status,data) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET no=excluded.no,uid=excluded.uid,status=excluded.status,data=excluded.data').run(id, no, uid ?? null, status, JSON.stringify(d)); }
 function saveInt(r) { const { id, no, uid, status, target, ...d } = r; q('INSERT INTO interviews(id,no,uid,target,status,data) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET no=excluded.no,uid=excluded.uid,target=excluded.target,status=excluded.status,data=excluded.data').run(id, no, uid ?? null, target, status, JSON.stringify(d)); }
+const allSupport = () => q('SELECT * FROM support ORDER BY id DESC').all().map(r => Object.assign(JSON.parse(r.data), { id: r.id, status: r.status, created: r.created }));
 const allTrash = () => q('SELECT * FROM trash ORDER BY tid').all().map(r => Object.assign(JSON.parse(r.data), { tid: r.tid, kind: r.kind }));
 
 function logAct(code, detail, actor) {
@@ -207,6 +209,7 @@ function stateFor(me) {
   if (P('audit_view')) st.log = q('SELECT * FROM log ORDER BY id DESC LIMIT 3000').all().reverse();
   if (P('data_manage')) { st.trash = allTrash(); st.lastBackup = kvGet('last_backup', null); }
   if (P('users_manage')) { const m = kvGet('staff_meta', null); st.staff = m ? Object.assign({}, m, { rows: q('SELECT row FROM staff ORDER BY rowid').all().map(r => JSON.parse(r.row)) }) : null; }
+  if (P('users_manage')) st.support = allSupport();
   if (P('settings')) {
     const ad = us.filter(u => u.type === 'admin').length;
     st.counts = { ad, rv: us.length - ad, reqs: R.length, reqP: R.filter(r => r.status === ST.p).length, reqA: R.filter(r => r.status === ST.a).length, reqR: R.filter(r => r.status === ST.r).length,
@@ -396,6 +399,31 @@ A.rv_block = (me, b) => {
 };
 A.rv_seen = (me, b) => { perm(me, 'users_manage'); const m = kvGet('rv_seen', {}); const at = str(b.at, 40); if (at && (!m[me.id] || at > m[me.id])) { m[me.id] = at; kvSet('rv_seen', m); } return {}; };
 
+/* --- technical support: anyone (even signed out) can send a message; managers read and close them --- */
+const SUP_ST = { n: 'جديدة', d: 'تمت المعالجة' };
+A.support_submit = (me, b, ctx) => {
+  const name = str(b.name, 80), work = str(b.work, 120), job = str(b.job, 60), text = str(b.text, 2000);
+  need(words(name) >= 2, 'يرجى كتابة الاسم الثنائي على الأقل', 'sp-name'); need(work.length >= 2, 'يرجى كتابة مكان العمل', 'sp-work');
+  need(job.length >= 2, 'يرجى كتابة العنوان الوظيفي', 'sp-job'); need(text.length >= 10, 'يرجى شرح المشكلة بوضوح (10 أحرف على الأقل)', 'sp-text');
+  const files = Array.isArray(b.files) ? b.files : [];
+  need(files.length <= 1, 'يمكن إرفاق صورة واحدة فقط', 'sp-file');
+  files.forEach(f => need(/^image\/(png|jpe?g|gif|webp|heic|heif|bmp)$/.test(str(f && f.type, 100)), 'المرفق يجب أن يكون صورة', 'sp-file'));
+  const ip = ctx.ip || '', since = new Date(Date.now() - 36e5).toISOString();
+  need(q('SELECT COUNT(*) c FROM support WHERE ip=? AND created>?').get(ip, since).c < 5, 'تم إرسال عدد كبير من الرسائل، حاول مرة أخرى بعد قليل.');
+  return tx(() => {
+    const saved = takeFiles(files), at = now();
+    const id = Number(q('INSERT INTO support(status,ip,created,data) VALUES(?,?,?,?)').run(SUP_ST.n, ip, at, JSON.stringify({ name, work, job, text, files: saved })).lastInsertRowid);
+    const no = 'DS-' + new Date().getFullYear() + '-' + String(id).padStart(5, '0');
+    logAct('support_submit', no + ' — ' + name + ' — ' + work, me || { id: null, name, role: '' });
+    return { no };
+  });
+};
+A.support_status = (me, b) => {
+  perm(me, 'users_manage'); const r = q('SELECT * FROM support WHERE id=?').get(+b.id); need(r, 'الرسالة غير موجودة');
+  const st = b.done ? SUP_ST.d : SUP_ST.n; q('UPDATE support SET status=? WHERE id=?').run(st, r.id);
+  logAct('support_done', (b.done ? 'معالجة' : 'إعادة فتح') + ' رسالة دعم رقم ' + r.id + ' — ' + JSON.parse(r.data).name, me); return {};
+};
+
 /* --- settings --- */
 A.svc_set = (me, b) => {
   perm(me, 'users_manage'); const d = kvGet('svc', {});
@@ -521,6 +549,8 @@ function canSeeFile(me, fid) {
   const P = p => hasPerm(me, p), inFiles = r => (r.files || []).some(f => f.id === fid);
   const r = allReqs().find(inFiles);
   if (r) return r.uid === me.id || (me.type === 'admin' && (P('requests_view') || P('data_manage'))) || (P('unit_inbox') && r.form && r.form.dept === me.unit);
+  const sp = allSupport().find(inFiles);
+  if (sp) return me.type === 'admin' && P('users_manage');
   const i = allInts().find(inFiles);
   if (i) return i.uid === me.id || (me.type === 'admin' && (P('data_manage') || P('users_manage') || (P('meetings') && i.target === me.role)));
   return me.type === 'admin' && P('data_manage') && allTrash().some(t => inFiles(t.rec));
@@ -550,7 +580,7 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req), fn = A[b.a];
       if (!fn || b.a === '__proto__') return sendJSON(res, 400, { ok: false, error: 'إجراء غير معروف' });
       let me = sessionUser(req);
-      if (!me && !['login', 'emp_login', 'signup', 'logout'].includes(b.a)) return sendJSON(res, 401, { ok: false, error: 'انتهت الجلسة، يرجى تسجيل الدخول من جديد.' });
+      if (!me && !['login', 'emp_login', 'signup', 'logout', 'support_submit'].includes(b.a)) return sendJSON(res, 401, { ok: false, error: 'انتهت الجلسة، يرجى تسجيل الدخول من جديد.' });
       const out = fn(me, b, ctx) || {};
       const who = out.me ? userById(out.me.id) : (out.relogin || b.a === 'logout' ? null : (me && userById(me.id)));
       delete out.me;

@@ -531,6 +531,8 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6)}
 .theme-fab:hover{box-shadow:var(--shadow-up),inset 0 1px 0 rgba(255,255,255,.6)}
 #auth{position:relative}
+.supb{margin-top:12px;color:var(--accent);border-color:var(--accent)}.supb:hover{background-color:color-mix(in srgb,var(--accent) 10%,transparent)}
+.sup-img{display:inline-block;margin-top:10px}.sup-img img{display:block;max-width:240px;max-height:160px;border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow);object-fit:cover}
 /* ===== entrance motion ===== */
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .main,.auth-main .brand,.panel{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
@@ -587,6 +589,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
           <div class="err" id="l-pass-e"></div>
         </div>
         <button class="btn" type="submit"><span>دخول</span></button>
+        <button class="btn sec supb" type="button" id="sup-open"><span>الدعم الفني</span></button>
       </form>
 
       <form id="p-emp" role="tabpanel" aria-labelledby="t-emp" novalidate hidden>
@@ -700,6 +703,12 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       <button class="card c2" data-s="الطلبات المحوّلة" data-perm="unit_inbox" data-go="inbox">
         <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.450 5.110L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.450-6.890A2 2 0 0 0 16.760 4H7.240a2 2 0 0 0-1.790 1.110z"/></svg></span>
         <span><b>الطلبات المحوّلة</b><small>الطلبات المحوّلة إلى قسمك أو شعبتك</small></span>
+        <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="card c3" data-s="المشاكل المرسلة" data-perm="users_manage" data-go="support">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></span>
+        <span><b>المشاكل المرسلة</b><small>رسائل الدعم الفني من المستخدمين</small></span>
+        <span class="nbadge" id="sup-new" hidden></span>
         <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <button class="card c5" data-s="الإعدادات" data-perm="settings" data-go="settings">
@@ -851,6 +860,13 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   <div class="hello"><h1>سجل المحذوفات</h1><p>كل طلب أو مقابلة تُحذف تبقى هنا مع اسم من حذفها ووقت الحذف وسببه، ويمكن استرجاعها.</p></div>
   <div class="bar"><input id="t-q" class="qinp" type="search" placeholder="بحث بالاسم أو رقم الطلب" aria-label="بحث"></div>
   <ul class="ulist" id="trlist"></ul>
+</main>
+
+<main class="main" id="v-support" hidden>
+  <button class="back" data-back="home"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>رجوع</button>
+  <div class="hello"><h1>المشاكل المرسلة</h1><p>الرسائل التي أرسلها المستخدمون من زر «الدعم الفني» في صفحة الدخول.</p></div>
+  <div class="bar"><div class="seg" id="sup-seg" role="group" aria-label="تصفية الرسائل"></div></div>
+  <ul class="ulist" id="sup-list"></ul>
 </main>
 
 <main class="main" id="v-audit" hidden>
@@ -1095,6 +1111,30 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   </div>
 </div>
 
+<div class="fm" id="sup-m" hidden>
+  <div class="fm-in" role="dialog" aria-modal="true" aria-labelledby="sup-t" style="max-width:560px">
+    <div class="fm-head">
+      <div style="min-width:0"><h2 id="sup-t">الدعم الفني</h2><p class="help" style="margin:0">اشرح مشكلتك وسنتواصل معك لمعالجتها.</p></div>
+      <button type="button" class="sbtn" id="sup-x" aria-label="إغلاق">إغلاق</button>
+    </div>
+    <form id="sup-f" novalidate style="padding:0">
+      <div class="formmsg" id="sup-msg" role="alert" hidden></div>
+      <div class="field"><label for="sp-name">الاسم الكامل</label><input id="sp-name" maxlength="80" autocomplete="name"><div class="err" id="sp-name-e"></div></div>
+      <div class="row2">
+        <div class="field"><label for="sp-work">مكان العمل</label><input id="sp-work" maxlength="120" placeholder="اسم المدرسة أو القسم"><div class="err" id="sp-work-e"></div></div>
+        <div class="field"><label for="sp-job">العنوان الوظيفي</label><input id="sp-job" maxlength="60" placeholder="مثال: مدرس، معلم، إداري"><div class="err" id="sp-job-e"></div></div>
+      </div>
+      <div class="field"><label for="sp-text">شرح المشكلة</label><textarea id="sp-text" maxlength="2000" placeholder="اكتب المشكلة التي واجهتك بالتفصيل"></textarea><div class="err" id="sp-text-e"></div></div>
+      <div class="field"><label for="sp-file">صورة للمشكلة (اختياري)</label>
+        <div class="upl"><svg class="i" viewBox="0 0 24 24"><path d="M21.440 11.050l-9.190 9.190a6 6 0 0 1-8.490-8.490l9.190-9.190a4 4 0 0 1 5.660 5.660l-9.200 9.190a2 2 0 0 1-2.830-2.830l8.490-8.480"/></svg><span id="sp-file-t">اضغط لاختيار صورة (حتى 5 ميغابايت)</span>
+          <input id="sp-file" type="file" accept="image/*"></div>
+        <div class="err" id="sp-file-e" role="alert"></div>
+      </div>
+      <div class="acts"><button class="btn auto" type="submit"><span>إرسال</span></button><button class="btn sec auto" type="button" id="sup-c">إلغاء</button></div>
+    </form>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -1147,8 +1187,8 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     inquiry:{label:'موظف استعلامات',perms:['requests_view','settings']},
     unit:{label:'حساب قسم / شعبة',perms:['unit_inbox','settings']}
   };
-  var NEED={data:'data_manage',trash:'data_manage',audit:'audit_view',about:'settings',interview:'interview',meetings:'meetings',track:'track',apply:'apply',visitors:'requests_view',settings:'settings',users:'users_manage',reviewers:'users_manage',inbox:'unit_inbox',staff:'users_manage'};
-  var VIEWS=['home','apply','track','interview','meetings','data','trash','audit','about','visitors','settings','users','reviewers','inbox','staff'];
+  var NEED={data:'data_manage',trash:'data_manage',audit:'audit_view',about:'settings',interview:'interview',meetings:'meetings',track:'track',apply:'apply',visitors:'requests_view',settings:'settings',users:'users_manage',reviewers:'users_manage',inbox:'unit_inbox',staff:'users_manage',support:'users_manage'};
+  var VIEWS=['home','apply','track','interview','meetings','data','trash','audit','about','visitors','settings','users','reviewers','inbox','staff','support'];
 
   var users=[],sid=null,editId=null,ORG={};
   var authEl=$('auth'),appEl=$('app');
@@ -1184,6 +1224,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     if(v==='reviewers')renderReviewers();
     if(v==='inbox')renderInbox();
     if(v==='staff')renderStaff();
+    if(v==='support')renderSupport();
     if(v==='apply')renderApply();
     if(v==='visitors')renderVisitors();
     if(v==='track')renderTrack();
@@ -1916,7 +1957,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     var rs=all.filter(function(r){return r.uid===sid&&(!q||r.no.toLowerCase().indexOf(q)>-1||r.type.toLowerCase().indexOf(q)>-1)}).reverse();
     $('tlist').innerHTML=rs.length?rs.map(function(r){return card(r,false)}).join(''):'<li class="box empty" style="margin:0">لا توجد طلبات. يمكنك تقديم طلب من «تقديم طلب».</li>';
   }
-  function rerender(){if(curView==='apply')applyClosed('req');if(curView==='visitors')renderVisitors();if(curView==='track')renderTrack();if(curView==='interview')renderInterview();if(curView==='meetings')renderMeetings();if(curView==='data')renderData();if(curView==='trash')renderTrash();if(curView==='audit')renderAudit();if(curView==='users')renderUsers();if(curView==='reviewers')renderReviewers();if(curView==='inbox')renderInbox();if(curView==='settings'&&can('users_manage'))renderSvc();refreshBell();updateCards()}
+  function rerender(){if(curView==='apply')applyClosed('req');if(curView==='visitors')renderVisitors();if(curView==='track')renderTrack();if(curView==='interview')renderInterview();if(curView==='meetings')renderMeetings();if(curView==='data')renderData();if(curView==='trash')renderTrash();if(curView==='audit')renderAudit();if(curView==='users')renderUsers();if(curView==='reviewers')renderReviewers();if(curView==='support')renderSupport();if(curView==='inbox')renderInbox();if(curView==='settings'&&can('users_manage'))renderSvc();refreshBell();updateCards()}
   function onAct(e){
     var b=e.target.closest('[data-act]');if(!b)return;var id=+b.dataset.id,a=b.dataset.act;
     if(a==='toggle'){openId=openId===id?null:id;rerender();var t=document.querySelector('[data-act="toggle"][data-id="'+id+'"]');if(t)t.focus();return}
@@ -1982,6 +2023,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     if(rc&&u.type==='admin'){var rv=revList(),nw=rv.filter(function(r){return isNewRev(r)}).length;
       rc.textContent=rv.length?'عدد المراجعين المسجلين: '+rv.length:'لا يوجد مراجعون مسجلون بعد';
       $('rv-new').textContent=nw+' جديد';$('rv-new').hidden=!nw}
+    var sn=u.type==='admin'&&can('users_manage')?supList().filter(function(m){return m.status===SUP_N}).length:0;if($('sup-new')){$('sup-new').textContent=sn+' جديدة';$('sup-new').hidden=!sn}
     if(ic){ic.dataset.o=ic.dataset.o||ic.textContent;var mi=is.filter(function(r){return r.uid===sid}),pi=mi.filter(function(r){return r.status===IS.p}).length;ic.textContent=mi.length?'مقابلاتك: '+mi.length+' • بانتظار الموعد: '+pi:ic.dataset.o;
       var ci=closedInfo('int');if(ci)ic.textContent=svc().int?'متوقف على حسابك حالياً':'الاستقبال متوقف حالياً'}
   }
@@ -2123,7 +2165,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   var VERSION='2.0.0',RELEASED='14 تشرين الأول 2026',BAKV=2;
   var ACT={
     login:['تسجيل دخول','auth'],logout:['تسجيل خروج','auth'],login_fail:['محاولة دخول فاشلة','auth'],signup:['إنشاء حساب مراجع','auth'],
-    req_submit:['تقديم طلب','req'],int_submit:['تقديم طلب مقابلة','req'],
+    req_submit:['تقديم طلب','req'],support_submit:['رسالة دعم فني','req'],support_done:['معالجة رسالة دعم فني','dec'],int_submit:['تقديم طلب مقابلة','req'],
     req_approve:['موافقة على طلب','dec'],req_reject:['رفض طلب','dec'],int_schedule:['تحديد موعد مقابلة','dec'],int_resched:['تعديل موعد مقابلة','dec'],
     user_add:['إضافة مستخدم','adm'],user_edit:['تعديل مستخدم','adm'],user_del:['حذف مستخدم','adm'],
     item_del:['حذف طلب','adm'],item_restore:['استرجاع طلب محذوف','adm'],backup:['تصدير نسخة احتياطية','adm'],svc_toggle:['تشغيل/إيقاف الاستقبال','adm'],svc_msg:['تعديل رسالة الاعتذار','adm'],rv_block:['إيقاف/تفعيل مراجع','adm'],req_form:['هامش وتحويل طلب','dec'],unit_route:['توجيه طلب إلى شعبة','dec'],staff_import:['استيراد قائمة الموظفين','adm'],stamp_names:['تغيير اسم المدير أو المعاون','adm'],staff_delete:['حذف قائمة الموظفين','adm'],unit_done:['إنجاز طلب محوّل','dec'],req_pdf:['تحميل نموذج PDF','adm'],req_print:['تحميل نسخة طباعة','adm'],restore:['استعادة نسخة احتياطية','adm']
@@ -2330,6 +2372,48 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     busy(this,function(){return api('change_pass',{old:o,new:n}).then(function(j){if(!j.ok)return fail(j);$('cp-form').reset();toast('تم تغيير كلمة المرور')})});
   });
 
+
+
+  /* ---------- technical support: a public message form on the login page; managers read the messages ---------- */
+  var SUP_N='جديدة',SUP_D='تمت المعالجة',supF='all',supFile=null;
+  function supList(){return S.support||[]}
+  function supClose(){$('sup-m').hidden=true;document.body.classList.remove('fm-open')}
+  function supReset(){$('sup-f').reset();supFile=null;$('sp-file-t').textContent='اضغط لاختيار صورة (حتى 5 ميغابايت)';msg('sup-msg','');['sp-name','sp-work','sp-job','sp-text','sp-file'].forEach(function(i){setErr(i,'')})}
+  $('sup-open').onclick=function(){supReset();$('sup-m').hidden=false;document.body.classList.add('fm-open');$('sp-name').focus()};
+  $('sup-x').onclick=supClose;$('sup-c').onclick=supClose;
+  $('sup-m').addEventListener('click',function(e){if(e.target===this)supClose()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('sup-m').hidden)supClose()});
+  $('sp-file').addEventListener('change',function(){var f=this.files[0];this.value='';
+    if(!f){return}
+    if(f.type.indexOf('image/')!==0){setErr('sp-file','المرفق يجب أن يكون صورة');return}
+    if(f.size>MAXB){setErr('sp-file','حجم الصورة أكبر من 5 م.ب');return}
+    supFile=f;setErr('sp-file','');$('sp-file-t').textContent='تم اختيار: '+f.name});
+  $('sup-f').addEventListener('submit',function(e){e.preventDefault();
+    var n=$('sp-name').value.trim(),w=$('sp-work').value.trim(),j=$('sp-job').value.trim(),t=$('sp-text').value.trim();
+    var ok=[setErr('sp-name',n.split(' ').filter(Boolean).length>=2?'':'يرجى كتابة الاسم الثنائي على الأقل'),setErr('sp-work',w.length>=2?'':'يرجى كتابة مكان العمل'),
+      setErr('sp-job',j.length>=2?'':'يرجى كتابة العنوان الوظيفي'),setErr('sp-text',t.length>=10?'':'يرجى شرح المشكلة بوضوح (10 أحرف على الأقل)')].every(Boolean);
+    if(!ok)return;
+    busy(this,function(){return (supFile?fileData([{file:supFile}]):Promise.resolve([])).then(function(fs){return api('support_submit',{name:n,work:w,job:j,text:t,files:fs})}).then(function(r){
+      if(!r.ok){if(r.field&&$(r.field)&&$(r.field+'-e'))return fail(r);msg('sup-msg',r.error);return}
+      supClose();supReset();toast('تم إرسال رسالتك إلى الدعم الفني. رقمها: '+r.no)})});
+  });
+  function renderSupport(){
+    var all=supList(),nn=all.filter(function(m){return m.status===SUP_N}).length;
+    $('sup-seg').innerHTML=[['all','الكل ('+all.length+')'],['new','جديدة ('+nn+')'],['done','تمت المعالجة ('+(all.length-nn)+')']].map(function(x){
+      return '<button class="segb" type="button" data-f="'+x[0]+'" aria-pressed="'+(supF===x[0])+'">'+x[1]+'</button>'}).join('');
+    var rs=all.filter(function(m){return supF==='all'||(supF==='new'?m.status===SUP_N:m.status===SUP_D)});
+    $('sup-list').innerHTML=rs.length?rs.map(function(m){var d=m.status===SUP_D,f=m.files&&m.files[0];
+      return '<li class="ucard"><div style="min-width:0;flex:1 1 260px"><b>'+esc(m.name)+'</b> <span class="help">• '+esc(m.job)+' • '+esc(m.work)+'</span>'+
+        '<div class="help">'+fdt(m.created)+' • رقم '+m.id+'</div>'+
+        '<div class="qbox" style="margin-top:8px">'+esc(m.text)+'</div>'+
+        (f?'<a href="api/file/'+encodeURIComponent(f.id)+'" target="_blank" rel="noopener" class="sup-img"><img src="api/file/'+encodeURIComponent(f.id)+'" alt="صورة المشكلة: '+esc(f.name)+'" loading="lazy"></a>':'')+'</div>'+
+        '<div class="acts" style="margin:0"><span class="st'+(d?' ok':'')+'">'+esc(m.status)+'</span>'+
+        '<button class="sbtn" type="button" data-id="'+m.id+'" data-done="'+(d?'0':'1')+'">'+(d?'إعادة فتح':'تمت المعالجة')+'</button></div></li>'}).join('')
+      :'<li class="box empty" style="margin:0">لا توجد رسائل في هذا القسم.</li>';
+  }
+  $('sup-seg').addEventListener('click',function(e){var b=e.target.closest('[data-f]');if(!b)return;supF=b.dataset.f;renderSupport()});
+  $('sup-list').addEventListener('click',function(e){var b=e.target.closest('[data-done]');if(!b)return;b.disabled=true;
+    api('support_status',{id:+b.dataset.id,done:b.dataset.done==='1'}).then(function(j){b.disabled=false;if(!j.ok)return fail(j);renderSupport();updateCards();toast(b.dataset.done==='1'?'تم تعليم الرسالة كمعالَجة':'أُعيد فتح الرسالة')})});
 
   /* ---------- Arabic date / time pickers: the native inputs show English (mm/dd/yyyy, AM/PM), so they are swapped for selects.
      The original <input> stays in the page as type=hidden with the same id and the same value format (YYYY-MM-DD / HH:MM). ---------- */

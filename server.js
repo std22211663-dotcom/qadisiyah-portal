@@ -541,7 +541,7 @@ A.item_restore = (me, b) => {
 function buildBackup(me) {
   return { app: 'qadisiyah-portal', backupVersion: 2, systemVersion: VERSION, exportedAt: now(), exportedBy: me.name,
     data: { users: allUsers().map(u => Object.assign(pubUser(u), { pass: u._pass })), staff: (() => { const m = kvGet('staff_meta', null); return m ? Object.assign({}, m, { rows: q('SELECT row FROM staff ORDER BY rowid').all().map(r => JSON.parse(r.row)) }) : null; })(),
-      requests: allReqs(), interviews: allInts(), trash: allTrash(), log: q('SELECT * FROM log ORDER BY id').all(),
+      requests: allReqs(), interviews: allInts(), trash: allTrash(), support: allSupport(), log: q('SELECT * FROM log ORDER BY id').all(),
       settings: { svc: kvGet('svc', {}), stamps: kvGet('stamps', {}) }, seq: { req: kvGet('seq_req', 0), int: kvGet('seq_int', 0) } } };
 }
 /* restore: accepts backups from this server AND from the earlier browser-only portal */
@@ -567,6 +567,11 @@ A.restore = (me, b, ctx) => {
       q('INSERT INTO users(id,username,phone,emp_id,type,role,pass,data,created) VALUES(?,?,?,?,?,?,?,?,?)').run(id, username, phone || null, empId || null, type, role === 'deputy' ? 'deputy_admin' : role, pass, JSON.stringify(rest), created || at);
     });
     d.requests.forEach(saveReq); d.interviews.forEach(r => saveInt(r));
+    if (Array.isArray(d.support)) {
+      q('DELETE FROM support').run();
+      d.support.filter(m => m && Number.isInteger(m.id) && typeof m.text === 'string').forEach(m => q('INSERT INTO support(id,status,ip,created,data) VALUES(?,?,?,?,?)').run(m.id, m.status === SUP_ST.d ? SUP_ST.d : SUP_ST.n, '', typeof m.created === 'string' ? m.created : at,
+        JSON.stringify({ name: str(m.name, 80), work: str(m.work, 120), job: str(m.job, 60), text: str(m.text, 2000), files: Array.isArray(m.files) ? m.files.filter(f => f && typeof f.id === 'string').map(f => ({ id: f.id, name: str(f.name, 200), size: +f.size || 0, type: str(f.type, 100) })) : [] })));
+    }
     tr.forEach(t => q('INSERT INTO trash(kind,data) VALUES(?,?)').run(t.kind, JSON.stringify({ rec: t.rec, by: t.by, at: t.at, reason: t.reason })));
     const seen = new Set(q('SELECT at,code,name,detail FROM log').all().map(l => l.at + '|' + l.code + '|' + l.name + '|' + l.detail));
     d.log.filter(l => l && typeof l.code === 'string' && typeof l.at === 'string').forEach(l => { const k = l.at + '|' + l.code + '|' + l.name + '|' + (l.detail || ''); if (!seen.has(k)) { seen.add(k); q('INSERT INTO log(at,code,uid,name,role,detail) VALUES(?,?,?,?,?,?)').run(l.at, l.code, l.uid ?? null, l.name, l.role || '', l.detail || ''); } });

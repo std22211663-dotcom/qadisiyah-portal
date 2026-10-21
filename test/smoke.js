@@ -1,0 +1,34 @@
+const B=process.env.QP_BASE||'http://localhost:3999';const org=require('../org.json');
+let pass=0,fail=0;const ok=(c,m,x)=>{if(c)pass++;else{fail++;console.log('FAIL:',m,x?JSON.stringify(x):'')}};
+function client(){let ck='';const f=async(p,o={})=>{const r=await fetch(B+p,Object.assign({},o,{headers:Object.assign({cookie:ck},o.headers||{})}));const sc=r.headers.get('set-cookie');if(sc){const m=sc.match(/qp_sid=([^;]*)/);ck=m&&m[1]?'qp_sid='+m[1]:''}return r};
+ const act=async(a,b={})=>(await f('/api/act',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'qp'},body:JSON.stringify(Object.assign({a},b))})).json();
+ return{f,act,state:async()=>(await f('/api/state')).json()}}
+const PNG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+(async()=>{const ad=client(),rv=client(),un=client(),an=client();
+ let j=await ad.act('login',{u:'admin',p:'Admin@123'});ok(j.ok&&j.state&&j.state.me,'admin login');
+ j=await rv.act('signup',{name:'علي حسين',work:'مدرسة',job:'مدرس',birth:'1990-01-01',appt:'ملاك دائم',phone:'٠٧٧٠١٢٣٤٥٦٧',username:'ali_h',pass:'secret1',empNo:'4001',nid:'123456789012'});ok(j.ok,'signup');
+ j=await rv.act('login',{u:'ali_h',p:'secret1'});ok(j.ok,'reviewer login');
+ j=await rv.act('req_submit',{type:'نقل',text:'يرجى التفضل بالموافقة على نقلي إلى مدرسة أخرى',sig:PNG});ok(j.ok,'req_submit',j);
+ j=await rv.act('int_submit',{target:'gm',reason:'مراجعة بخصوص النقل'});ok(j.ok,'int_submit',j);
+ let st=await ad.state();const rid=st.reqs[0].id,iid=st.ints[0].id;ok(st.reqs.length===1,'admin sees req');ok(!JSON.stringify(st).includes('scrypt'),'no hash leak');ok(Array.isArray(st.support),'admin state has support list');
+ st=await rv.state();ok(st.support===undefined,'reviewer state has no support');
+ j=await ad.act('req_decide',{id:rid,act:'approve'});ok(j.ok,'approve');
+ const d=org.gm.find(x=>x.acc);
+ j=await ad.act('unit_save',{unit:d.n,username:'unit_sup',pass:'unitpass1',holder:'كريم سعد'});ok(j.ok,'unit_save',j);
+ j=await ad.act('req_form',{id:rid,to:'المدير العام',ham:'للتفضل بالإنجاز',dept:d.n,sec:d.s[0]});ok(j.ok,'req_form',j);
+ j=await un.act('login',{u:'unit_sup',p:'unitpass1'});ok(j.ok,'unit login');
+ j=await un.act('unit_work',{id:rid,act:'done',note:'تم'});ok(j.ok,'unit done',j);
+ j=await ad.act('int_schedule',{id:iid,when:new Date(Date.now()+864e5).toISOString()});ok(j.ok,'int_schedule',j);
+ j=await ad.act('svc_set',{req:false});ok(j.ok,'svc off');j=await rv.act('req_submit',{type:'x',text:'نص طويل كفاية',sig:PNG});ok(!j.ok,'closed rejects');await ad.act('svc_set',{req:true});
+ j=await ad.act('item_del',{kind:'req',id:rid,reason:'اختبار'});ok(j.ok,'item_del');st=await ad.state();j=await ad.act('item_restore',{tid:st.trash[0].tid});ok(j.ok,'item_restore');
+ j=await an.act('req_submit',{});ok(!j.ok,'anon blocked on normal action');
+ const bk=await (await ad.f('/api/backup')).json();ok(bk.app==='qadisiyah-portal','backup');j=await ad.act('restore',{backup:bk,file:'b.json'});ok(j.ok,'restore',j);j=await ad.act('login',{u:'admin',p:'Admin@123'});ok(j.ok,'re-login after restore');
+ // support
+ j=await an.act('support_submit',{name:'سارة حيدر',work:'متوسطة',job:'مدرسة',text:'مشكلة في رفع المرفقات الآن',files:[{name:'s.png',type:'image/png',data:PNG.split(',')[1]}]});ok(j.ok&&/^DS-/.test(j.no),'support anon submit',j);
+ j=await an.act('support_submit',{name:'سارة',work:'م',job:'م',text:'قصير'});ok(!j.ok&&j.field,'support validation',j);
+ j=await an.act('support_submit',{name:'سارة حيدر',work:'متوسطة',job:'مدرسة',text:'مرفق ليس صورة',files:[{name:'a.pdf',type:'application/pdf',data:'JVBERi0='}]});ok(!j.ok,'support rejects pdf');
+ j=await an.act('support_status',{id:1,done:true});ok(!j.ok,'anon cannot close support');
+ st=await ad.state();ok(st.support.length===1&&st.support[0].files.length===1,'admin sees support msg',st.support);
+ const fid=st.support[0].files[0].id;ok((await ad.f('/api/file/'+fid)).status===200,'admin gets support image');ok((await an.f('/api/file/'+fid)).status===404,'anon denied support image');ok((await rv.f('/api/file/'+fid)).status===404,'reviewer denied support image');
+ j=await ad.act('support_status',{id:st.support[0].id,done:true});ok(j.ok,'close support');st=await ad.state();ok(st.support[0].status==='تمت المعالجة','status updated');
+ console.log(`done: ${pass} passed, ${fail} failed`)})().catch(e=>console.log('CRASH',e));

@@ -35,7 +35,7 @@
 node server.js
 ```
 
-في Windows: انقر مرتين على `start.bat`.
+في Windows: انقر مرتين على `start.bat`. (يفتح البوابة على المنفذ **3001** افتراضياً: http://localhost:3001، ولتغييره اكتب `set PORT=4000` قبل تشغيله).
 
 ثم افتح: http://localhost:3000
 

@@ -533,6 +533,51 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
 #auth{position:relative}
 .supb{margin-top:12px;color:var(--accent);border-color:var(--accent)}.supb:hover{background-color:color-mix(in srgb,var(--accent) 10%,transparent)}
 .sup-img{display:inline-block;margin-top:10px}.sup-img img{display:block;max-width:240px;max-height:160px;border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow);object-fit:cover}
+/* ===== welcome screen ===== */
+#intro{position:relative;min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.in-main{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:38px 18px 26px;max-width:880px;margin:0 auto;width:100%}
+.in-logo{width:150px;height:150px;margin:0 auto 10px;display:block}
+.in-min{margin:0;color:var(--muted-fg);font-weight:700}
+.in-hi{margin:10px 0 0;font-size:clamp(2.1rem,7vw,3.6rem);font-weight:800;line-height:1.2;background:linear-gradient(90deg,var(--gold),var(--primary) 55%,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.in-t{margin:6px 0 14px;font-size:clamp(1.15rem,3.6vw,1.7rem);font-weight:700;color:var(--fg)}
+.in-quote{margin:0 0 26px;padding:10px 22px;border-radius:999px;font-weight:700;color:var(--fg);background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-b);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6)}
+.in-quote span{color:var(--gold);font-size:1.2em}
+.in-feat{list-style:none;margin:0 0 30px;padding:0;display:grid;gap:14px;grid-template-columns:repeat(2,1fr);width:100%}
+.in-feat li{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 14px;border-radius:18px;background:var(--glass);-webkit-backdrop-filter:blur(14px) saturate(150%);backdrop-filter:blur(14px) saturate(150%);border:1px solid var(--glass-b);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.7);transition:transform .25s,box-shadow .25s}
+.in-feat li::before{content:"";position:absolute;inset:0;background:var(--gloss);pointer-events:none}
+.in-feat li:hover{transform:translateY(-5px);box-shadow:var(--shadow-up)}
+.in-feat li>*{position:relative}
+.in-feat svg{width:34px;height:34px;padding:8px;box-sizing:content-box;border-radius:14px;color:var(--primary);background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 24%,var(--card)),color-mix(in srgb,var(--accent) 12%,var(--card)));box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.in-feat b{font-size:1.05rem}.in-feat small{color:var(--muted-fg);font-weight:600}
+.in-acts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.in-acts .btn{min-height:56px;padding:0 34px;font-size:1.1rem}
+#intro .credit{position:relative;z-index:2}
+#intro .theme-fab{z-index:4}
+.in-shapes{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.in-shapes>*{position:absolute;display:block}
+.sh{border-radius:50%;filter:blur(2px);opacity:.55}
+.sh1{width:420px;height:420px;top:-130px;inset-inline-end:-120px;background:radial-gradient(circle at 30% 30%,color-mix(in srgb,var(--primary) 55%,transparent),transparent 70%);animation:drift 14s ease-in-out infinite}
+.sh2{width:340px;height:340px;bottom:-90px;inset-inline-start:-90px;background:radial-gradient(circle at 60% 40%,color-mix(in srgb,var(--accent) 50%,transparent),transparent 70%);animation:drift 17s ease-in-out infinite reverse}
+.sh3{width:220px;height:220px;top:38%;inset-inline-start:6%;background:radial-gradient(circle,color-mix(in srgb,var(--gold) 55%,transparent),transparent 70%);animation:drift 12s ease-in-out infinite}
+.ring{border-radius:50%;border:2px dashed color-mix(in srgb,var(--gold) 70%,transparent)}
+.r1{width:260px;height:260px;top:9%;inset-inline-start:7%;animation:spin 40s linear infinite}
+.r2{width:180px;height:180px;bottom:12%;inset-inline-end:8%;border-style:solid;border-color:color-mix(in srgb,var(--primary) 35%,transparent);animation:spin 28s linear infinite reverse}
+.sq{border-radius:18px;border:2px solid color-mix(in srgb,var(--accent) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,transparent),transparent)}
+.q1{width:74px;height:74px;top:16%;inset-inline-end:14%;transform:rotate(18deg);animation:bob 7s ease-in-out infinite}
+.q2{width:48px;height:48px;bottom:24%;inset-inline-start:14%;transform:rotate(-14deg);animation:bob 9s ease-in-out infinite reverse}
+.q3{width:34px;height:34px;top:58%;inset-inline-end:5%;transform:rotate(30deg);border-color:color-mix(in srgb,var(--gold) 65%,transparent);animation:bob 6s ease-in-out infinite}
+.dots{width:120px;height:120px;background-image:radial-gradient(color-mix(in srgb,var(--primary) 45%,transparent) 2px,transparent 2.5px);background-size:16px 16px;opacity:.7}
+.d1{top:6%;inset-inline-start:30%}.d2{bottom:8%;inset-inline-end:28%}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-22px) scale(1.06)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bob{0%,100%{translate:0 0}50%{translate:0 -16px}}
+#intro .in-main>*{animation:rise .6s cubic-bezier(.2,.7,.2,1) both}
+#intro .in-main>*:nth-child(2){animation-delay:.06s}#intro .in-main>*:nth-child(3){animation-delay:.12s}#intro .in-main>*:nth-child(4){animation-delay:.18s}
+#intro .in-main>*:nth-child(5){animation-delay:.24s}#intro .in-main>*:nth-child(6){animation-delay:.30s}#intro .in-main>*:nth-child(7){animation-delay:.36s}
+@media (min-width:960px){.in-main{max-width:1060px}.in-feat{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:430px){.in-feat{gap:10px}.in-feat li{padding:12px 8px}.in-feat small{display:none}.in-feat b{font-size:.95rem}.in-feat svg{width:26px;height:26px}.in-quote{padding:8px 16px;font-size:.92rem}}
+@media (max-width:560px){.in-logo{width:118px;height:118px}.sh1{width:280px;height:280px}.r1{width:150px;height:150px}.in-acts{width:100%}.in-acts .btn{flex:1 1 100%}}
+@media (prefers-reduced-motion:reduce){.in-shapes>*,#intro .in-main>*{animation:none!important}}
 /* ===== entrance motion ===== */
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .main,.auth-main .brand,.panel{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
@@ -555,6 +600,35 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
 </svg>
 
 <!-- ============ AUTH PAGE ============ -->
+<section id="intro" aria-label="مقدمة ترحيبية" hidden>
+  <div class="stripe"></div>
+  <button class="theme-btn theme-fab" type="button" aria-label="تبديل الوضع الداكن / الفاتح" title="الوضع الداكن / الفاتح"><svg class="i moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+  <div class="in-shapes" aria-hidden="true">
+    <span class="sh sh1"></span><span class="sh sh2"></span><span class="sh sh3"></span>
+    <span class="ring r1"></span><span class="ring r2"></span>
+    <span class="sq q1"></span><span class="sq q2"></span><span class="sq q3"></span>
+    <span class="dots d1"></span><span class="dots d2"></span>
+  </div>
+  <main class="in-main">
+    <svg class="logo in-logo" role="img" aria-label="شعار وزارة التربية"><use href="#emblem"/></svg>
+    <p class="in-min">جمهورية العراق – وزارة التربية</p>
+    <p class="in-hi">أهلاً وسهلاً بكم</p>
+    <h1 class="in-t">في بوابة مديرية تربية القادسية الإلكترونية</h1>
+    <p class="in-quote"><span aria-hidden="true">❝</span> معاً نحو إدارة تربوية أكثر يُسراً وشفافية <span aria-hidden="true">❞</span></p>
+    <ul class="in-feat">
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg><b>تقديم الطلبات</b><small>إلكترونياً بتوقيع ومرفقات</small></li>
+      <li><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>متابعة لحظية</b><small>اعرف حالة طلبك في أي وقت</small></li>
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><b>مقابلة المسؤولين</b><small>اطلب موعداً مع المدير أو المعاونين</small></li>
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg><b>دعم فني</b><small>نصلح مشكلتك بأسرع وقت</small></li>
+    </ul>
+    <div class="in-acts">
+      <button class="btn auto" type="button" id="intro-login"><span>تسجيل الدخول</span></button>
+      <button class="btn sec auto" type="button" id="intro-signup"><span>إنشاء حساب جديد</span></button>
+    </div>
+  </main>
+  <footer class="credit">برمجة وتصميم <strong>فريق IT مديرية تربية القادسية</strong></footer>
+</section>
+
 <section id="auth" aria-label="تسجيل الدخول">
   <div class="stripe"></div>
   <button class="theme-btn theme-fab" type="button" aria-label="تبديل الوضع الداكن / الفاتح" title="الوضع الداكن / الفاتح"><svg class="i moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
@@ -1287,6 +1361,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   /* ---------- navigation ---------- */
   function show(v){
     if(v!=='auth'){ if(!cur())v='auth'; else if(NEED[v]&&!can(NEED[v]))v='home'; }
+    $('intro').hidden=true;
     if(v!==curView){openId=null;if(curView==='reviewers')markRevSeen()}curView=v;var a=v==='auth';authEl.hidden=!a;appEl.hidden=a;
     if(!a){VIEWS.forEach(function(n){$('v-'+n).hidden=n!==v});render(v)}
     window.scrollTo(0,0);
@@ -2570,6 +2645,14 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       $('pw-f').reset();toast('تم تغيير كلمة المرور')})});
   });
 
+
+  /* ---------- welcome screen: shown once per browser tab to signed-out visitors, then the login / signup page ---------- */
+  function introSeen(){try{return sessionStorage.getItem('qp_intro')==='1'}catch(e){return false}}
+  function showIntro(){authEl.hidden=true;appEl.hidden=true;$('intro').hidden=false;window.scrollTo(0,0)}
+  function leaveIntro(which){try{sessionStorage.setItem('qp_intro','1')}catch(e){}show('auth');tab(which);var f=which==='signup'?$('s-name'):$('l-user');try{f.focus({preventScroll:true})}catch(e){}}
+  $('intro-login').onclick=function(){leaveIntro('login')};
+  $('intro-signup').onclick=function(){leaveIntro('signup')};
+
   /* ---------- Arabic date / time pickers: the native inputs show English (mm/dd/yyyy, AM/PM), so they are swapped for selects.
      The original <input> stays in the page as type=hidden with the same id and the same value format (YYYY-MM-DD / HH:MM). ---------- */
   var AR_M=['كانون الثاني','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين الأول','تشرين الثاني','كانون الأول'];
@@ -2616,7 +2699,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   if(darkMq&&darkMq.addEventListener)darkMq.addEventListener('change',syncTheme);
   syncTheme();
   fetchPub();
-  fetchState().then(function(st){if(st){applyState(st);show('home')}else show('auth')});
+  fetchState().then(function(st){if(st){applyState(st);show('home')}else if(introSeen())show('auth');else showIntro()});
 })();
 </script>
 <div id="print-root" aria-hidden="true"></div>

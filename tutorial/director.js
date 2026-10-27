@@ -5,6 +5,11 @@
   const D = window.D = { speed: 1, script: [], stepNo: 0 };
   const sl = ms => new Promise(r => setTimeout(r, Math.max(60, ms * D.speed)));
   D.sleep = sl;
+  /* narration: clips are decoded into AudioBuffers (record.js feeds them) and played into a MediaStream that is recorded with the tab */
+  D.audio = {}; D.ctx = null; D.dest = null;
+  D.audioInit = () => { if (!D.ctx) { D.ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 }); D.dest = D.ctx.createMediaStreamDestination(); } return D.ctx; };
+  D.loadClip = async (key, b64) => { D.audioInit(); const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); D.audio[key] = await D.ctx.decodeAudioData(u.buffer); return D.audio[key].duration; };
+  D.speak = key => { const b = D.audio[key]; if (!b || !D.ctx) return 0; if (D.ctx.state !== 'running') D.ctx.resume(); const s = D.ctx.createBufferSource(); s.buffer = b; s.connect(D.dest); s.start(); return b.duration; };
 
   /* ---------- overlay ---------- */
   const css = document.createElement('style');
@@ -106,14 +111,14 @@
   /* ---------- captions, steps, cards ---------- */
   D.say = async (text, o = {}) => {
     cap.innerHTML = text; cap.classList.add('on'); D.script.push({ step: D.stepNo, title: D.stepTitle || '', text: cap.textContent });
-    await sl(o.ms || Math.max(2400, 1100 + cap.textContent.length * 62));
+    const dur = D.speak(cap.textContent); await sl(dur ? Math.max(1600, dur * 1000 + 800) : (o.ms || Math.max(2400, 1100 + cap.textContent.length * 62)));
   };
   D.quiet = () => cap.classList.remove('on');
   D.step = async (title) => { D.stepNo++; D.stepTitle = title; stepEl.textContent = 'الخطوة ' + D.stepNo.toLocaleString('ar-IQ') + ' • ' + title; stepEl.classList.add('on'); D.script.push({ step: D.stepNo, title, text: '', heading: true }); await sl(400) };
   D.card = async (title, sub, ms, small) => {
     card.innerHTML = '<svg class="lg" viewBox="0 0 100 100"><use href="#emblem"/></svg><div class="bar"></div><h1>' + title + '</h1>' + (sub ? '<h2>' + sub + '</h2>' : '') + '<p>' + (small || 'ELC . Abbas Ali') + '</p>';
     D.quiet(); stepEl.classList.remove('on'); cur.classList.remove('on'); card.classList.add('on'); D.script.push({ step: 0, title: 'بطاقة', text: title + (sub ? ' — ' + sub : ''), heading: true });
-    await sl(ms || 4500); card.classList.remove('on'); await sl(700);
+    const dur = D.speak(title + (sub ? " — " + sub : "")); await sl(dur ? Math.max(ms || 4500, dur * 1000 + 900) : (ms || 4500)); card.classList.remove('on'); await sl(700);
   };
   D.show = (el) => { ring(resolve(el), 2200) };
 
@@ -121,10 +126,11 @@
   D.rec = {
     async start() {
       const s = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 25 }, audio: false, preferCurrentTab: true });
-      const mt = ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(t => MediaRecorder.isTypeSupported(t));
-      const rec = new MediaRecorder(s, { mimeType: mt, videoBitsPerSecond: 4000000, videoKeyFrameIntervalDuration: 2000 }), parts = [];
+      const withAudio = !!(D.dest && Object.keys(D.audio).length), stream = withAudio ? new MediaStream([...s.getVideoTracks(), ...D.dest.stream.getAudioTracks()]) : s;
+      const mt = [...(withAudio ? ['video/mp4;codecs=avc1.42E01E,mp4a.40.2'] : []), 'video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(t => MediaRecorder.isTypeSupported(t));
+      const rec = new MediaRecorder(stream, { audioBitsPerSecond: 128000, mimeType: mt, videoBitsPerSecond: 4000000, videoKeyFrameIntervalDuration: 2000 }), parts = [];
       rec.ondataavailable = e => e.data.size && parts.push(e.data); D.rec._stopped = new Promise(r => rec.onstop = r); rec.start(2000);
-      D.rec._r = rec; D.rec._s = s; D.rec._p = parts; D.rec._mt = mt; await new Promise(r => setTimeout(r, 1800)); D.rec._size = innerWidth + "x" + innerHeight; return { mime: mt, w: innerWidth, h: innerHeight };
+      D.rec._r = rec; D.rec._s = s; D.rec._p = parts; D.rec._mt = mt; await new Promise(r => setTimeout(r, 1800)); D.rec._size = innerWidth + "x" + innerHeight; return { mime: mt, w: innerWidth, h: innerHeight, audio: withAudio };
     },
     async stop() { D.rec._r.stop(); await D.rec._stopped; D.rec._s.getTracks().forEach(t => t.stop()); window.__blob = new Blob(D.rec._p, { type: D.rec._mt }); return { mime: D.rec._mt, size: window.__blob.size, startSize: D.rec._size, endSize: innerWidth + "x" + innerHeight } }
   };

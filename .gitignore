@@ -7,3 +7,4 @@ node_modules/
 .env
 # مقاطع الشرح المسجلة (كبيرة الحجم): تُنشأ بالأمر node tutorial/record.js
 tutorial/output/
+tutorial/.env.local

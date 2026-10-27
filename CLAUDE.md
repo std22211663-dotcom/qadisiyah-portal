@@ -39,6 +39,9 @@ Suites in `test/`: `smoke` (signup -> request -> approve -> transfer -> section 
 
 Port note: another local project may already use 3000; check with `netstat -ano | findstr :3000` before assuming a stale server is yours. After editing `server.js` the running server must be restarted.
 
+## Tutorial videos
+Two screen-recorded Arabic walkthroughs (administrators / reviewers) are produced by `tutorial/`: `node tutorial/record.js manager` or `reviewer` (add `--dry` to play fast without recording). It starts a throw-away portal with demo data, drives Chrome through DevTools and records the tab to `tutorial/output/*.mp4` (git-ignored) together with the narration text. No dependencies. Re-record after UI changes: scenes are in `scenes-*.js`, the on-screen helper in `director.js`. There is no Arabic voice installed on the machine, so the videos use on-screen captions.
+
 ## Conventions
 - Keep the server dependency-free unless there is a strong reason.
 - Store records as JSON in `data` columns with key fields duplicated as columns; add columns/indexes when a query needs them.

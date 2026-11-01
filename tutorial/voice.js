@@ -1,7 +1,7 @@
 /* Narration clips for the tutorial videos. Pick an engine with TTS_ENGINE=azure|google|windows (auto-detected when unset):
      azure   : official Azure Speech REST API  -> AZURE_SPEECH_KEY, AZURE_SPEECH_REGION   (voice: TTS_VOICE, default ar-SA-HamedNeural)
      google  : official Google Cloud Text-to-Speech -> GOOGLE_TTS_KEY                      (voice: TTS_VOICE, default ar-XA-Wavenet-B)
-     windows : a local Arabic SAPI voice (installed in Windows Settings > Time & language > Speech)
+     windows : a local Arabic voice (WinRT, see winrt-tts.ps1) (installed in Windows Settings > Time & language > Speech)
    Keys can be put in tutorial/.env.local (git-ignored), one KEY=VALUE per line.
    Clips are cached in output/audio/<hash>.<ext>, so unchanged sentences are never synthesised twice. */
 const crypto = require('node:crypto'), fs = require('node:fs'), path = require('node:path'), { spawnSync } = require('node:child_process');
@@ -16,9 +16,10 @@ try {
 const speechText = t => String(t).replace(/\s*—\s*/g, '. ').replace(/\s+/g, ' ').trim();
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+const PS1 = path.join(__dirname, 'winrt-tts.ps1');
 function localArabicVoice() {
-  const r = spawnSync('powershell', ['-NoProfile', '-Command', "Add-Type -AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).GetInstalledVoices() | Where-Object { $_.VoiceInfo.Culture.Name -like 'ar*' } | ForEach-Object { $_.VoiceInfo.Name }"], { encoding: 'utf8' });
-  return (r.stdout || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean)[0] || null;
+  const r = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', PS1, '-List'], { encoding: 'utf8' });
+  return (r.stdout || '').split('\n').map(x => x.trim()).filter(x => / \| ar/i.test(x)).map(x => x.split('|')[0].trim())[0] || null;
 }
 function engine() {
   const e = (process.env.TTS_ENGINE || '').toLowerCase();
@@ -52,9 +53,9 @@ async function synthGoogle(text, file) {
 function synthWindows(text, file) {
   const voice = process.env.TTS_VOICE || localArabicVoice(); if (!voice) throw new Error('no Arabic Windows voice installed');
   const tmp = file + '.txt'; fs.writeFileSync(tmp, text, 'utf8');
-  const ps = "Add-Type -AssemblyName System.Speech; $s=New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.SelectVoice('" + voice.replace(/'/g, "''") + "'); $s.Rate=-1; $s.SetOutputToWaveFile('" + file.replace(/\\/g, '/') + "'); $s.Speak([IO.File]::ReadAllText('" + tmp.replace(/\\/g, '/') + "', [Text.Encoding]::UTF8)); $s.Dispose()";
-  const r = spawnSync('powershell', ['-NoProfile', '-Command', ps], { encoding: 'utf8' }); try { fs.unlinkSync(tmp); } catch (e) { }
-  if (r.status !== 0) throw new Error('windows tts failed: ' + (r.stderr || '').slice(0, 160));
+  const r = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', PS1, '-TextFile', tmp, '-Out', file, '-Voice', voice.replace(/^Microsoft /, ''), '-Rate', String(process.env.TTS_WIN_RATE || 0.9)], { encoding: 'utf8' });
+  try { fs.unlinkSync(tmp); } catch (e) { }
+  if (r.status !== 0 || !fs.existsSync(file)) throw new Error('windows tts failed: ' + (r.stderr || r.stdout || '').slice(0, 160));
 }
 
 /* returns { sentence -> { file, ext } } for every distinct sentence */

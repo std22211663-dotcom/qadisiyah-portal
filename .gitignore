@@ -8,3 +8,6 @@ node_modules/
 # مقاطع الشرح المسجلة (كبيرة الحجم): تُنشأ بالأمر node tutorial/record.js
 tutorial/output/
 tutorial/.env.local
+
+# ناتج بناء تطبيق exe: يُنشأ بالأمر exe/build-exe.ps1
+dist/

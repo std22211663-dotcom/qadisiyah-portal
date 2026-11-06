@@ -42,6 +42,9 @@ Port note: another local project may already use 3000; check with `netstat -ano 
 ## Tutorial videos
 Two screen-recorded Arabic walkthroughs (administrators / reviewers) are produced by `tutorial/`: `node tutorial/record.js manager` or `reviewer` (add `--dry` to play fast without recording). It starts a throw-away portal with demo data, drives Chrome through DevTools and records the tab to `tutorial/output/*.mp4` (git-ignored) together with the narration text. No dependencies. Re-record after UI changes: scenes are in `scenes-*.js`, the on-screen helper in `director.js`. Narration: `voice.js` turns every caption into an audio clip (Azure Speech or Google Cloud TTS with a key in `tutorial/.env.local`, or a local Arabic Windows voice) and `record.js` records it into the video (output name ends with -بصوت); `--silent` records captions only. Do not use unofficial/impersonating TTS endpoints (Microsoft Edge read-aloud rejects non-browser clients).
 
+## Windows exe
+`powershell -ExecutionPolicy Bypass -File exe/build-exe.ps1` builds `dist/QadisiyahPortal.zip` (git-ignored): `QadisiyahPortal.exe` (C# launcher compiled with the csc that ships with Windows, `exe/Launcher.cs`) starts the bundled `runtime/node.exe app/server.js` hidden with `DATA_DIR=<exe folder>/data`, opens the browser, shows LAN addresses; `port.txt` overrides the port (default 3001). Rebuild after editing server.js or public/.
+
 ## Conventions
 - Keep the server dependency-free unless there is a strong reason.
 - Store records as JSON in `data` columns with key fields duplicated as columns; add columns/indexes when a query needs them.

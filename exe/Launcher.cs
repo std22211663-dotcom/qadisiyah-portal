@@ -20,6 +20,14 @@ static class Launcher
         catch { return false; }
     }
 
+    // app-style window (no tabs/address bar) with Edge or Chrome when present; plain default browser otherwise
+    static void OpenApp(string url)
+    {
+        foreach (var p in new[] { "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", "C:/Program Files/Microsoft/Edge/Application/msedge.exe", "C:/Program Files/Google/Chrome/Application/chrome.exe", "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" })
+            if (File.Exists(p)) { try { Process.Start(new ProcessStartInfo(p, "--app=" + url) { UseShellExecute = false }); return; } catch { } }
+        Open(url);
+    }
+
     static void Open(string url) { try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); } catch { } }
 
     static void Stop()
@@ -38,7 +46,7 @@ static class Launcher
 
         Application.EnableVisualStyles();
         if (!File.Exists(nodeExe) || !File.Exists(server)) { MessageBox.Show("ملفات البرنامج ناقصة (runtime أو app). أعد فك الضغط كاملاً.", "بوابة تربية القادسية", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, MessageBoxOptions.RtlReading | MessageBoxOptions.RightAlign); return; }
-        if (PortOpen(port)) { Open(local); return; }   // already running: just open it
+        if (PortOpen(port)) { OpenApp(local); return; }   // already running: just open it
 
         var psi = new ProcessStartInfo(nodeExe, "\"" + server + "\"") { WorkingDirectory = dir, CreateNoWindow = true, UseShellExecute = false };
         psi.EnvironmentVariables["PORT"] = port.ToString();
@@ -54,7 +62,7 @@ static class Launcher
         var info = new Label { Left = 16, Top = 48, Width = 420, Height = 130, Text = "على هذا الجهاز:\r\n" + local + "\r\n\r\nمن أجهزة الشبكة نفسها:\r\n" + (lan == "" ? "(لا توجد شبكة)" : lan), RightToLeft = RightToLeft.No, TextAlign = ContentAlignment.TopLeft };
         var open = new Button { Left = 16, Top = 200, Width = 200, Height = 38, Text = "فتح البوابة في المتصفح" };
         var stop = new Button { Left = 232, Top = 200, Width = 200, Height = 38, Text = "إيقاف وإغلاق" };
-        open.Click += (s, e) => Open(local);
+        open.Click += (s, e) => OpenApp(local);
         stop.Click += (s, e) => f.Close();
         f.FormClosing += (s, e) => Stop();
         f.Controls.AddRange(new Control[] { status, info, open, stop });
@@ -63,7 +71,7 @@ static class Launcher
         t.Tick += (s, e) =>
         {
             if (node.HasExited) { t.Stop(); status.Text = "توقف الخادم. تحقق أن المنفذ " + port + " غير مستعمل."; return; }
-            if (!opened && PortOpen(port)) { opened = true; status.Text = "الخادم يعمل ✔"; Open(local); }
+            if (!opened && PortOpen(port)) { opened = true; status.Text = "الخادم يعمل ✔"; OpenApp(local); }
             else if (!opened && ++tries > 40) { t.Stop(); status.Text = "الخادم لم يستجب بعد..."; }
         };
         t.Start();

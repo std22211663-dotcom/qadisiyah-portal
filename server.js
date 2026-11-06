@@ -588,7 +588,7 @@ A.restore = (me, b, ctx) => {
 };
 
 /* ------------------------------------------------------------------- HTTP */
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webp': 'image/webp' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webp': 'image/webp', '.webmanifest': 'application/manifest+json' };
 const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
 function baseHeaders(res) {
   res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Referrer-Policy', 'same-origin'); res.setHeader('X-Frame-Options', 'DENY');
@@ -612,7 +612,7 @@ function serveStatic(req, res, p) {
   if (!f.startsWith(PUBLIC_DIR)) { res.writeHead(403); return res.end(); }
   fs.stat(f, (e, st) => {
     if (e || !st.isFile()) { f = path.join(PUBLIC_DIR, 'index.html'); }
-    const ext = path.extname(f); res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600' });
+    const ext = path.extname(f); res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': ext === '.html' || path.basename(f) === 'sw.js' ? 'no-cache' : 'public, max-age=3600' });
     fs.createReadStream(f).pipe(res);
   });
 }

@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "_redirects"],
+    "rewrites": [
+      { "source": "/api/**", "run": { "serviceId": "qadisiyah-portal", "region": "europe-west1" } },
+      { "source": "/healthz", "run": { "serviceId": "qadisiyah-portal", "region": "europe-west1" } },
+      { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      { "source": "**", "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "same-origin" }
+      ] }
+    ]
+  }
+}

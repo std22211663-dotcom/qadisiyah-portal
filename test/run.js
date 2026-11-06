@@ -2,7 +2,7 @@
 const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
 const root = path.join(__dirname, '..');
-const suites = [['smoke.js'], ['employee-login.js'], ['profile.js'], ['duplicates.js'], ['seed.js', 'backup.js']];
+const suites = [['smoke.js'], ['employee-login.js'], ['profile.js'], ['duplicates.js'], ['seed.js', 'backup.js'], ['persist.js']];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function up(base) { for (let i = 0; i < 60; i++) { try { if ((await fetch(base + '/healthz')).ok) return true; } catch (e) { } await sleep(250); } return false; }
 (async () => {

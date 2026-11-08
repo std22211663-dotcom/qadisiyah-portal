@@ -62,14 +62,21 @@ const kvGet = (k, d) => { const r = q('SELECT v FROM kv WHERE k=?').get(k); retu
 const kvSet = (k, v) => q('INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v').run(k, JSON.stringify(v));
 
 /* ------------------------------------------------------------------- roles */
-const ADMINP = ['requests_view', 'requests_decide', 'meetings', 'settings', 'users_manage', 'data_manage', 'audit_view'];
+const ADMINP = ['requests_view', 'requests_decide', 'requests_transfer', 'meetings', 'settings', 'users_manage', 'reviewers_manage', 'support_manage', 'svc_manage', 'stamps_manage', 'staff_import', 'backup_export', 'backup_restore', 'item_delete', 'item_restore', 'audit_view'];
+/* the first versions had coarser permissions; an account that holds an old one gets all the finer ones it covers (see migratePerms) */
+const PERM_SPLIT = {
+  users_manage: ['reviewers_manage', 'support_manage', 'svc_manage', 'stamps_manage', 'staff_import'],
+  data_manage: ['backup_export', 'backup_restore', 'item_delete', 'item_restore'],
+  requests_decide: ['requests_transfer'],
+};
+const MANAGE_ANY = ['users_manage', 'reviewers_manage', 'backup_export', 'backup_restore', 'item_delete', 'item_restore'];   // may see every request and interview
 const ROLES = {
   reviewer: { label: 'مراجع', perms: ['apply', 'interview', 'track'] },
   gm: { label: 'المدير العام', perms: ADMINP.slice() },
-  deputy_admin: { label: 'المعاون الإداري', perms: ['requests_view', 'requests_decide', 'meetings', 'settings'] },
-  deputy_tech: { label: 'المعاون الفني', perms: ['requests_view', 'requests_decide', 'meetings', 'settings'] },
-  deputy: { label: 'معاون المدير العام', perms: ['requests_view', 'requests_decide', 'meetings', 'settings'] },
-  head: { label: 'مدير قسم', perms: ['requests_view', 'requests_decide', 'settings'] },
+  deputy_admin: { label: 'المعاون الإداري', perms: ['requests_view', 'requests_decide', 'requests_transfer', 'meetings', 'settings'] },
+  deputy_tech: { label: 'المعاون الفني', perms: ['requests_view', 'requests_decide', 'requests_transfer', 'meetings', 'settings'] },
+  deputy: { label: 'معاون المدير العام', perms: ['requests_view', 'requests_decide', 'requests_transfer', 'meetings', 'settings'] },
+  head: { label: 'مدير قسم', perms: ['requests_view', 'requests_decide', 'requests_transfer', 'settings'] },
   officer: { label: 'موظف مختص', perms: ['requests_view', 'settings'] },
   inquiry: { label: 'موظف استعلامات', perms: ['requests_view', 'settings'] },
   unit: { label: 'حساب قسم / شعبة', perms: ['unit_inbox', 'settings'] },
@@ -109,6 +116,17 @@ function saveUser(u) {
 }
 function pubUser(u) { if (!u) return null; const o = Object.assign({}, u); delete o._pass; return o; }
 const hasPerm = (u, p) => !!u && Array.isArray(u.perms) && u.perms.includes(p);
+const hasAny = (u, list) => list.some(p => hasPerm(u, p));
+/* run at start and after a restore: accounts saved before the split (no permsV) get the finer permissions their old ones covered */
+function migratePerms() {
+  for (const r of q("SELECT id,data FROM users WHERE type='admin'").all()) {
+    const d = JSON.parse(r.data); if (d.permsV === 2) continue;
+    const ps = new Set(Array.isArray(d.perms) ? d.perms : []);
+    for (const old of Object.keys(PERM_SPLIT)) if (ps.has(old)) PERM_SPLIT[old].forEach(x => ps.add(x));
+    ps.delete('data_manage'); d.perms = [...ps]; d.permsV = 2;
+    q('UPDATE users SET data=? WHERE id=?').run(JSON.stringify(d), r.id);
+  }
+}
 const hasManager = list => list.some(u => u.type === 'admin' && hasPerm(u, 'users_manage'));
 
 function rowRec(r) { return r ? Object.assign(JSON.parse(r.data), { id: r.id, no: r.no, uid: r.uid, status: r.status }) : null; }
@@ -194,22 +212,24 @@ function stateFor(me) {
   const us = allUsers();
   let users;
   if (P('users_manage')) users = us.map(pubUser);
+  else if (P('reviewers_manage')) users = us.map(u => u.type === 'reviewer' ? pubUser(u) : { id: u.id, type: u.type, role: u.role, name: u.name, unit: u.unit, holder: u.holder, perms: u.perms });
   else if (isAdmin) users = us.filter(u => u.type === 'admin').map(u => ({ id: u.id, type: u.type, role: u.role, name: u.name, unit: u.unit, holder: u.holder, perms: u.perms }));
   else users = [pubUser(me)];
   const R = allReqs(), I = allInts();
   let reqs = [], ints = [];
-  if (isAdmin && (P('requests_view') || P('users_manage') || P('data_manage'))) reqs = R;
+  if (isAdmin && (P('requests_view') || hasAny(me, MANAGE_ANY))) reqs = R;
   else if (P('unit_inbox')) reqs = R.filter(r => r.form && r.form.dept === me.unit);
   else if (!isAdmin) reqs = R.filter(r => r.uid === me.id);
-  if (isAdmin && (P('users_manage') || P('data_manage'))) ints = I;
+  if (isAdmin && hasAny(me, MANAGE_ANY)) ints = I;
   else if (P('meetings')) ints = I.filter(r => r.target === me.role);
   else if (!isAdmin) ints = I.filter(r => r.uid === me.id);
   const targets = {}; ['gm', 'deputy_admin', 'deputy_tech'].forEach(k => { targets[k] = us.some(u => u.type === 'admin' && u.role === k && hasPerm(u, 'meetings')); });
   const st = { me: pubUser(me), users, reqs, ints, svc: svc(), stamps: stamps(), org: ORG, targets, pub: pubState(), rvSeen: kvGet('rv_seen', {})[me.id] || '' };
   if (P('audit_view')) st.log = q('SELECT * FROM log ORDER BY id DESC LIMIT 3000').all().reverse();
-  if (P('data_manage')) { st.trash = allTrash(); st.lastBackup = kvGet('last_backup', null); }
-  if (P('users_manage')) { const m = kvGet('staff_meta', null); st.staff = m ? Object.assign({}, m, { rows: q('SELECT row FROM staff ORDER BY rowid').all().map(r => JSON.parse(r.row)) }) : null; }
-  if (P('users_manage')) st.support = allSupport();
+  if (P('item_restore') || P('item_delete')) st.trash = allTrash();
+  if (P('backup_export') || P('backup_restore')) st.lastBackup = kvGet('last_backup', null);
+  if (P('staff_import')) { const m = kvGet('staff_meta', null); st.staff = m ? Object.assign({}, m, { rows: q('SELECT row FROM staff ORDER BY rowid').all().map(r => JSON.parse(r.row)) }) : null; }
+  if (P('support_manage')) st.support = allSupport();
   if (P('settings')) {
     const ad = us.filter(u => u.type === 'admin').length;
     st.counts = { ad, rv: us.length - ad, reqs: R.length, reqP: R.filter(r => r.status === ST.p).length, reqA: R.filter(r => r.status === ST.a).length, reqR: R.filter(r => r.status === ST.r).length,
@@ -376,7 +396,7 @@ A.req_decide = (me, b) => {
   saveReq(r); logAct(ok ? 'req_approve' : 'req_reject', r.no + ' — ' + r.type + ' — ' + r.applicant.name + (note ? ' — ملاحظة: ' + note : ''), me); return {};
 };
 A.req_form = (me, b) => {
-  perm(me, 'requests_decide'); const r = reqById(b.id); need(r, 'هذا الطلب لم يعد موجوداً.');
+  perm(me, 'requests_transfer'); const r = reqById(b.id); need(r, 'هذا الطلب لم يعد موجوداً.');
   const to = str(b.to, 30), ham = str(b.ham, 200), dept = str(b.dept, 120), sec = str(b.sec, 160), supKey = SUP_BY_LABEL[to];
   need(supKey, 'اختر الجهة الموجه إليها الطلب', 'f-to'); need(ham, 'يرجى اختيار الهامش أو كتابته قبل التنفيذ.', 'f-ham'); need(dept, 'يرجى اختيار القسم المعني بالتحويل.', 'f-dept');
   const known = deptsFor(supKey);
@@ -416,7 +436,7 @@ A.user_save = (me, b) => {
   need(!q('SELECT 1 FROM users WHERE username=? COLLATE NOCASE AND id<>?').get(un, id || 0), 'اسم المستخدم مستخدم مسبقاً', 'u-user');
   need(!ph || !q('SELECT 1 FROM users WHERE phone=? AND id<>?').get(ph, id || 0), 'رقم الهاتف مسجل مسبقاً', 'u-phone');
   const prev = id ? userById(id) : null; if (id) need(prev && prev.type === 'admin' && prev.role !== 'unit', 'المستخدم غير موجود');
-  const rec = Object.assign(prev || { created: now() }, { type: 'admin', role, name: n, dept: d, username: un, phone: ph, perms: cleanPerms(b.perms) });
+  const rec = Object.assign(prev || { created: now() }, { type: 'admin', role, name: n, dept: d, username: un, phone: ph, perms: cleanPerms(b.perms), permsV: 2 });
   if (p) rec._pass = hashPass(p);
   const after = allUsers().filter(u => u.id !== id).concat([rec]); need(hasManager(after), 'يجب أن يبقى حساب واحد على الأقل بصلاحية إدارة المستخدمين');
   saveUser(rec); logAct(id ? 'user_edit' : 'user_add', n + ' (' + ROLES[role].label + ')', me); return {};
@@ -441,7 +461,7 @@ A.unit_save = (me, b) => {
   saveUser(rec); logAct(prev ? 'user_edit' : 'user_add', unit + ' (حساب قسم/شعبة)', me); return {};
 };
 A.rv_save = (me, b) => {
-  perm(me, 'users_manage');
+  perm(me, 'reviewers_manage');
   const id = b.id ? +b.id : null, n = str(b.name, 80), w = str(b.work, 120), j = str(b.job, 40), birth = str(b.birth, 10), a = str(b.appt, 40), ph = digits(str(b.phone, 20)), un = str(b.username, 20), p = String(b.pass || '');
   const prev = id ? userById(id) : null; if (id) need(prev && prev.type === 'reviewer', 'المراجع غير موجود');
   need(words(n) >= 2, 'يرجى كتابة الاسم الثنائي على الأقل', 'rf-name'); need(w, 'يرجى كتابة مكان العمل', 'rf-work');
@@ -460,11 +480,11 @@ A.rv_save = (me, b) => {
   saveUser(rec); logAct(id ? 'user_edit' : 'user_add', n + ' (مراجع)', me); return {};
 };
 A.rv_block = (me, b) => {
-  perm(me, 'users_manage'); const u = userById(b.id); need(u && u.type === 'reviewer', 'المراجع غير موجود'); const k = b.k === 'int' ? 'int' : 'req';
+  perm(me, 'reviewers_manage'); const u = userById(b.id); need(u && u.type === 'reviewer', 'المراجع غير موجود'); const k = b.k === 'int' ? 'int' : 'req';
   u.block = Object.assign({}, u.block || {}); u.block[k] = !u.block[k]; saveUser(u);
   logAct('rv_block', (u.block[k] ? 'إيقاف ' : 'تفعيل ') + KIND[k] + ' — ' + u.name, me); return { on: u.block[k] };
 };
-A.rv_seen = (me, b) => { perm(me, 'users_manage'); const m = kvGet('rv_seen', {}); const at = str(b.at, 40); if (at && (!m[me.id] || at > m[me.id])) { m[me.id] = at; kvSet('rv_seen', m); } return {}; };
+A.rv_seen = (me, b) => { perm(me, 'reviewers_manage'); const m = kvGet('rv_seen', {}); const at = str(b.at, 40); if (at && (!m[me.id] || at > m[me.id])) { m[me.id] = at; kvSet('rv_seen', m); } return {}; };
 
 /* --- technical support: anyone (even signed out) can send a message; managers read and close them --- */
 const SUP_ST = { n: 'جديدة', d: 'تمت المعالجة' };
@@ -486,20 +506,20 @@ A.support_submit = (me, b, ctx) => {
   });
 };
 A.support_status = (me, b) => {
-  perm(me, 'users_manage'); const r = q('SELECT * FROM support WHERE id=?').get(+b.id); need(r, 'الرسالة غير موجودة');
+  perm(me, 'support_manage'); const r = q('SELECT * FROM support WHERE id=?').get(+b.id); need(r, 'الرسالة غير موجودة');
   const st = b.done ? SUP_ST.d : SUP_ST.n; q('UPDATE support SET status=? WHERE id=?').run(st, r.id);
   logAct('support_done', (b.done ? 'معالجة' : 'إعادة فتح') + ' رسالة دعم رقم ' + r.id + ' — ' + JSON.parse(r.data).name, me); return {};
 };
 
 /* --- settings --- */
 A.svc_set = (me, b) => {
-  perm(me, 'users_manage'); const d = kvGet('svc', {});
+  perm(me, 'svc_manage'); const d = kvGet('svc', {});
   ['req', 'int'].forEach(k => { if (typeof b[k] === 'boolean') { d[k] = b[k]; logAct('svc_toggle', (b[k] ? 'تفعيل' : 'إيقاف') + ' استقبال ' + KIND[k] + ' لجميع المراجعين', me); } });
   if (typeof b.msg === 'string') { const m = str(b.msg, 400); need(!m || m.length >= 5, 'اكتب رسالة اعتذار أوضح'); d.msg = m; logAct('svc_msg', '', me); }
   kvSet('svc', d); return {};
 };
 A.stamps_set = (me, b) => {
-  perm(me, 'users_manage'); const g = str(b.gm, 60), da = str(b.deputy_admin, 60), dt = str(b.deputy_tech, 60);
+  perm(me, 'stamps_manage'); const g = str(b.gm, 60), da = str(b.deputy_admin, 60), dt = str(b.deputy_tech, 60);
   need(words(g) >= 2, 'اكتب اسم المدير العام كاملاً', 'stp-gm');
   need(!da || words(da) >= 2, 'اكتب اسم المعاون الإداري كاملاً أو اتركه فارغاً', 'stp-da'); need(!dt || words(dt) >= 2, 'اكتب اسم المعاون الفني كاملاً أو اتركه فارغاً', 'stp-dt');
   const old = stamps(), nw = { gm: g, deputy_admin: da, deputy_tech: dt };
@@ -507,7 +527,7 @@ A.stamps_set = (me, b) => {
   kvSet('stamps', nw); logAct('stamp_names', ch.join(' • ') || 'بدون تغيير', me); return {};
 };
 A.staff_import = (me, b) => {
-  perm(me, 'users_manage');
+  perm(me, 'staff_import');
   const cols = Array.isArray(b.cols) ? b.cols.map(c => str(c, 120)) : [], rows = Array.isArray(b.rows) ? b.rows : [], m = b.map || {};
   need(cols.length && cols.length <= 200 && rows.length && rows.length <= 100000, 'الملف غير صالح أو كبير جداً');
   const map = {}; ['id', 'ver', 'name', 'work', 'job', 'appt', 'phone'].forEach(k => { const v = +m[k]; map[k] = Number.isInteger(v) && v >= 0 && v < cols.length ? v : -1; });
@@ -520,19 +540,19 @@ A.staff_import = (me, b) => {
   });
   logAct('staff_import', str(b.file, 200) + ' — ' + rows.length + ' موظف، ' + cols.length + ' عمود', me); return { dup, empty, n: rows.length };
 };
-A.staff_delete = (me) => { perm(me, 'users_manage'); tx(() => { q('DELETE FROM staff').run(); q("DELETE FROM kv WHERE k='staff_meta'").run(); }); logAct('staff_delete', '', me); return {}; };
+A.staff_delete = (me) => { perm(me, 'staff_import'); tx(() => { q('DELETE FROM staff').run(); q("DELETE FROM kv WHERE k='staff_meta'").run(); }); logAct('staff_delete', '', me); return {}; };
 A.log = (me, b) => { const code = b.code === 'req_pdf' || b.code === 'req_print' ? b.code : null; need(code && me.type === 'admin', 'غير مسموح'); logAct(code, str(b.detail, 200), me); return {}; };
 
 /* --- data: delete, restore, backup --- */
 A.item_del = (me, b) => {
-  perm(me, 'data_manage'); const kind = b.kind === 'int' ? 'int' : 'req', t = kind === 'req' ? 'requests' : 'interviews', reason = str(b.reason, 120);
+  perm(me, 'item_delete'); const kind = b.kind === 'int' ? 'int' : 'req', t = kind === 'req' ? 'requests' : 'interviews', reason = str(b.reason, 120);
   need(reason.length >= 3, 'يرجى كتابة سبب الحذف'); const row = q(`SELECT * FROM ${t} WHERE id=?`).get(+b.id); need(row, 'السجل غير موجود');
   const rec = kind === 'int' ? Object.assign(rowRec(row), { target: row.target }) : rowRec(row);
   tx(() => { q(`DELETE FROM ${t} WHERE id=?`).run(rec.id); q('INSERT INTO trash(kind,data) VALUES(?,?)').run(kind, JSON.stringify({ rec, by: { id: me.id, name: me.name, role: ROLES[me.role].label }, at: now(), reason })); });
   logAct('item_del', (kind === 'req' ? 'طلب ' : 'مقابلة ') + rec.no + ' — ' + rec.applicant.name + ' — السبب: ' + reason, me); return { no: rec.no };
 };
 A.item_restore = (me, b) => {
-  perm(me, 'data_manage'); const t = allTrash().find(x => x.tid === +b.tid); need(t, 'العنصر غير موجود');
+  perm(me, 'item_restore'); const t = allTrash().find(x => x.tid === +b.tid); need(t, 'العنصر غير موجود');
   const tbl = t.kind === 'req' ? 'requests' : 'interviews';
   need(!q(`SELECT 1 FROM ${tbl} WHERE id=? OR no=?`).get(t.rec.id, t.rec.no), 'تعذّر الاسترجاع: يوجد سجل بالرقم نفسه.');
   tx(() => { (t.kind === 'req' ? saveReq : saveInt)(t.rec); q('DELETE FROM trash WHERE tid=?').run(t.tid); });
@@ -546,7 +566,7 @@ function buildBackup(me) {
 }
 /* restore: accepts backups from this server AND from the earlier browser-only portal */
 A.restore = (me, b, ctx) => {
-  perm(me, 'data_manage'); const bk = b.backup; need(bk && bk.app === 'qadisiyah-portal' && bk.data, 'هذا الملف ليس نسخة احتياطية لبوابة تربية القادسية.');
+  perm(me, 'backup_restore'); const bk = b.backup; need(bk && bk.app === 'qadisiyah-portal' && bk.data, 'هذا الملف ليس نسخة احتياطية لبوابة تربية القادسية.');
   const d = bk.data; ['requests', 'interviews', 'trash', 'log'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
   need(Array.isArray(d.users) && d.users.length, 'النسخة لا تحتوي حسابات مستخدمين.');
   need(d.users.every(u => u && Number.isInteger(u.id) && typeof u.name === 'string' && typeof u.username === 'string' && typeof u.pass === 'string' && ROLES[u.role] && Array.isArray(u.perms) && (u.type === 'admin' || u.type === 'reviewer')), 'بيانات المستخدمين في النسخة غير صالحة.');
@@ -583,6 +603,7 @@ A.restore = (me, b, ctx) => {
     if (d.settings) { if (d.settings.svc) kvSet('svc', d.settings.svc); if (d.settings.stamps) kvSet('stamps', d.settings.stamps); }
     if (d.seq) { kvSet('seq_req', Math.max(+d.seq.req || 0, kvGet('seq_req', 0))); kvSet('seq_int', Math.max(+d.seq.int || 0, kvGet('seq_int', 0))); }
   });
+  migratePerms();   // a backup from before the permission split carries the old, coarser permissions
   logAct('restore', 'الملف: ' + str(b.file, 200) + ' — نسخة بتاريخ ' + str(bk.exportedAt, 40), me);
   ctx.endSession(); return { relogin: true };
 };
@@ -620,12 +641,12 @@ function canSeeFile(me, fid) {
   if (!me) return false;
   const P = p => hasPerm(me, p), inFiles = r => (r.files || []).some(f => f.id === fid);
   const r = allReqs().find(inFiles);
-  if (r) return r.uid === me.id || (me.type === 'admin' && (P('requests_view') || P('data_manage'))) || (P('unit_inbox') && r.form && r.form.dept === me.unit);
+  if (r) return r.uid === me.id || (me.type === 'admin' && (P('requests_view') || hasAny(me, MANAGE_ANY))) || (P('unit_inbox') && r.form && r.form.dept === me.unit);
   const sp = allSupport().find(inFiles);
-  if (sp) return me.type === 'admin' && P('users_manage');
+  if (sp) return me.type === 'admin' && P('support_manage');
   const i = allInts().find(inFiles);
-  if (i) return i.uid === me.id || (me.type === 'admin' && (P('data_manage') || P('users_manage') || (P('meetings') && i.target === me.role)));
-  return me.type === 'admin' && P('data_manage') && allTrash().some(t => inFiles(t.rec));
+  if (i) return i.uid === me.id || (me.type === 'admin' && (hasAny(me, MANAGE_ANY) || (P('meetings') && i.target === me.role)));
+  return me.type === 'admin' && (P('item_restore') || P('item_delete')) && allTrash().some(t => inFiles(t.rec));
 }
 
 const server = http.createServer(async (req, res) => {
@@ -659,7 +680,7 @@ const server = http.createServer(async (req, res) => {
       return sendJSON(res, 200, Object.assign({ ok: true }, out, who ? { state: stateFor(who) } : {}));
     }
     if (p === '/api/backup' && req.method === 'GET') {
-      const me = sessionUser(req); if (!me || !hasPerm(me, 'data_manage')) return sendJSON(res, 403, { error: 'غير مسموح' });
+      const me = sessionUser(req); if (!me || !hasPerm(me, 'backup_export')) return sendJSON(res, 403, { error: 'غير مسموح' });
       const d = new Date(), name = `qadisiyah-backup-${d.toISOString().slice(0, 10)}-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}.json`;
       kvSet('last_backup', now()); logAct('backup', name, me);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Disposition': `attachment; filename="${name}"`, 'Cache-Control': 'no-store' });
@@ -682,6 +703,7 @@ const server = http.createServer(async (req, res) => {
     console.error(e); return sendJSON(res, 500, { ok: false, error: 'حدث خطأ في الخادم' });
   }
 });
+migratePerms();
 setInterval(() => { q('DELETE FROM sessions WHERE expires<?').run(Date.now()); }, 3600e3).unref();
 if (require.main === module) server.listen(PORT, HOST, () => console.log(`بوابة تربية القادسية تعمل على http://localhost:${PORT}  (البيانات في ${DATA_DIR})`));
 module.exports = { server, db };

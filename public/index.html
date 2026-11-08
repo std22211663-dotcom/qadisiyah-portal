@@ -417,6 +417,7 @@ h1,h2,b,dd,.qbox,.chips span,.notif li{overflow-wrap:anywhere}
   .brand{margin-bottom:12px}
   .top-in{min-height:52px;padding-block:6px}
 }
+.perms .pgrp{font-weight:800;font-size:.82rem;color:var(--pri,#0a2f6b);margin:10px 0 2px;padding-top:8px;border-top:1px dashed var(--line,#d9e1f0)}.perms .pgrp:first-of-type{border-top:0;margin-top:0;padding-top:0}
 </style>
 <style id="theme-v2">
 /* ===== Theme v2: royal blue + emerald + gold, glass panels, glossy reflections (screen only, print untouched) ===== */
@@ -788,7 +789,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
         <span><b>الطلبات المحوّلة</b><small>الطلبات المحوّلة إلى قسمك أو شعبتك</small></span>
         <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-      <button class="card c3" data-s="المشاكل المرسلة" data-perm="users_manage" data-go="support">
+      <button class="card c3" data-s="المشاكل المرسلة" data-perm="support_manage" data-go="support">
         <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></span>
         <span><b>المشاكل المرسلة</b><small>رسائل الدعم الفني من المستخدمين</small></span>
         <span class="nbadge" id="sup-new" hidden></span>
@@ -916,20 +917,20 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
 <main class="main" id="v-data" hidden>
   <button class="back" data-back="settings"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>رجوع</button>
   <div class="hello"><h1>النسخ الاحتياطي والحذف</h1><p>احفظ نسخة من بيانات النظام أو استعدها، واحذف الطلبات مع بقاء أثرها في سجل المحذوفات.</p></div>
-  <section class="box" aria-labelledby="bk-t">
+  <section class="box" aria-labelledby="bk-t" data-perm="backup_export">
     <h2 id="bk-t">النسخة الاحتياطية</h2>
     <dl class="kv" id="bk-stats"></dl>
     <div class="formmsg" id="bk-msg" role="status" hidden></div>
     <div class="acts"><button class="btn auto" id="bk-export" type="button">تنزيل نسخة احتياطية</button><button class="btn sec auto" id="bk-copy" type="button" hidden>نسخ النسخة كنص</button></div>
     <p class="help">يحتوي الملف على بيانات المستخدمين وكلمات مرورهم، فاحفظه في مكان آمن ولا تشاركه. المرفقات لا تُحفظ فيه، وتُحفظ أسماؤها وأحجامها فقط.</p>
   </section>
-  <section class="box" aria-labelledby="rs-t">
+  <section class="box" aria-labelledby="rs-t" data-perm="backup_restore">
     <h2 id="rs-t">استعادة نسخة</h2>
     <div class="field"><label for="bk-file">ملف النسخة الاحتياطية (JSON)</label><input id="bk-file" type="file" accept="application/json,.json"><div class="err" id="bk-file-e" role="alert"></div></div>
     <div class="qbox" id="bk-prev" hidden></div>
     <div class="acts"><button class="sbtn danger" id="bk-restore" type="button" hidden>استعادة هذه النسخة</button></div>
   </section>
-  <section class="box" aria-labelledby="dl-t">
+  <section class="box" aria-labelledby="dl-t" data-perm="item_delete">
     <h2 id="dl-t">حذف الطلبات والمقابلات</h2>
     <p class="help">لا يُمحى الطلب المحذوف نهائياً. ينتقل إلى «سجل المحذوفات» مع اسمك ووقت الحذف والسبب، ويمكن استرجاعه من هناك.</p>
     <div class="bar"><div class="seg" id="dseg" role="group" aria-label="نوع السجل"></div>
@@ -1038,7 +1039,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     </div>
     <div class="acts" style="margin-top:0"><button class="btn auto" type="submit">تغيير كلمة المرور</button></div>
   </form>
-  <section class="box" aria-labelledby="stp-t" data-perm="users_manage">
+  <section class="box" aria-labelledby="stp-t" data-perm="stamps_manage">
     <h2 id="stp-t">أسماء المدير العام والمعاونين</h2>
     <p class="help" style="margin:0 0 12px">تظهر هذه الأسماء في ختم مربع التوقيع عند «حفظ وتنفيذ» الهامش. عند تغيير المدير أو المعاون غيّر اسمه هنا، والطلبات المختومة سابقاً تبقى بالاسم الذي خُتمت به.</p>
     <div class="fm-ctl">
@@ -1048,7 +1049,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     </div>
     <div class="acts" style="margin-top:0"><button class="btn auto" type="button" id="stp-save">حفظ الأسماء</button></div>
   </section>
-  <section class="box" aria-labelledby="svc-t" data-perm="users_manage">
+  <section class="box" aria-labelledby="svc-t" data-perm="svc_manage">
     <h2 id="svc-t">استقبال الطلبات والمقابلات</h2>
     <p class="help" style="margin:0 0 12px">عند الإيقاف لا يستطيع أي مراجع تقديم طلب أو مقابلة جديدة، وتظهر له رسالة الاعتذار أدناه. الطلبات السابقة تبقى كما هي.</p>
     <div class="sw-row"><span><b>استقبال الطلبات</b><small id="svc-req-s"></small></span>
@@ -1068,23 +1069,23 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       <span><b>إدارة المستخدمين</b><small>إنشاء حسابات الإدارة وتحديد صلاحياتها</small></span>
       <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <button class="card c6" data-perm="users_manage" data-go="reviewers">
+    <button class="card c6" data-perm="reviewers_manage" data-go="reviewers">
       <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.870"/><path d="M16 3.130a4 4 0 0 1 0 7.750"/></svg></span>
       <span><b>إدارة المراجعين</b><small>الحسابات المنشأة من صفحة التسجيل</small></span>
       <span class="nbadge" id="rv-new" hidden></span>
       <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <button class="card c1" data-perm="users_manage" data-go="staff">
+    <button class="card c1" data-perm="staff_import" data-go="staff">
       <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg></span>
       <span><b>قائمة الموظفين</b><small>استيراد ملف Excel للدخول بالرقم الوظيفي</small></span>
       <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <button class="card c2" data-perm="data_manage" data-go="data">
+    <button class="card c2" data-perm="backup_export,backup_restore,item_delete" data-go="data">
       <span class="ic"><svg class="i" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.660 4 3 9 3s9-1.340 9-3V5"/><path d="M3 12c0 1.660 4 3 9 3s9-1.340 9-3"/></svg></span>
       <span><b>النسخ الاحتياطي والحذف</b><small>تصدير البيانات واستعادتها وحذف الطلبات</small></span>
       <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <button class="card c3" data-perm="data_manage" data-go="trash">
+    <button class="card c3" data-perm="item_restore" data-go="trash">
       <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></span>
       <span><b>سجل المحذوفات</b><small>الطلبات المحذوفة مع إمكانية استرجاعها</small></span>
       <svg class="i arr" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
@@ -1179,12 +1180,25 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
         <div class="help">اختيار الدور يملأ الصلاحيات الافتراضية ويمكن تعديلها</div></div>
     </div>
     <fieldset class="perms"><legend>الصلاحيات التفصيلية</legend>
+      <div class="pgrp">الطلبات</div>
       <label class="chk"><input type="checkbox" name="pm" value="requests_view"><span>عرض طلبات المراجعين<small>اطلاع فقط دون أي إجراء</small></span></label>
       <label class="chk"><input type="checkbox" name="pm" value="requests_decide"><span>الموافقة والرفض<small>يتطلب صلاحية العرض</small></span></label>
-      <label class="chk"><input type="checkbox" name="pm" value="settings"><span>الوصول إلى الإعدادات</span></label>
-      <label class="chk"><input type="checkbox" name="pm" value="users_manage"><span>إدارة المستخدمين<small>إنشاء الحسابات وتعديل الصلاحيات</small></span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="requests_transfer"><span>كتابة الهامش والتحويل إلى القسم<small>يتطلب صلاحية العرض</small></span></label>
       <label class="chk"><input type="checkbox" name="pm" value="meetings"><span>استلام طلبات المقابلة<small>تظهر له الطلبات الموجهة إلى دوره فقط (المدير العام أو أحد المعاونين)</small></span></label>
-      <label class="chk"><input type="checkbox" name="pm" value="data_manage"><span>النسخ الاحتياطي والحذف<small>تصدير البيانات واستعادتها وحذف الطلبات واسترجاعها</small></span></label>
+      <div class="pgrp">الحسابات</div>
+      <label class="chk"><input type="checkbox" name="pm" value="users_manage"><span>إدارة المستخدمين<small>إنشاء حسابات الإدارة والأقسام وتعديل الصلاحيات</small></span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="reviewers_manage"><span>إدارة المراجعين<small>إضافة حسابات المراجعين وتعديلها وإيقافها</small></span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="staff_import"><span>قائمة الموظفين<small>استيراد ملف الموظفين للدخول بالرقم الوظيفي</small></span></label>
+      <div class="pgrp">الدعم والإعدادات</div>
+      <label class="chk"><input type="checkbox" name="pm" value="settings"><span>الوصول إلى الإعدادات</span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="support_manage"><span>المشاكل المرسلة<small>قراءة رسائل الدعم الفني وإغلاقها</small></span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="svc_manage"><span>تشغيل وإيقاف الخدمات<small>إيقاف استقبال الطلبات والمقابلات وتعديل رسالة الإيقاف</small></span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="stamps_manage"><span>أسماء القادة والأختام<small>تغيير أسماء المدير العام والمعاونين المطبوعة</small></span></label>
+      <div class="pgrp">البيانات</div>
+      <label class="chk"><input type="checkbox" name="pm" value="backup_export"><span>تصدير نسخة احتياطية<small>تنزيل ملف النسخة الاحتياطية</small></span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="backup_restore"><span>استعادة نسخة احتياطية<small>استبدال بيانات النظام بنسخة محفوظة</small></span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="item_delete"><span>حذف الطلبات والمقابلات<small>نقلها إلى سجل المحذوفات</small></span></label>
+      <label class="chk"><input type="checkbox" name="pm" value="item_restore"><span>سجل المحذوفات والاسترجاع<small>عرض المحذوفات واسترجاعها</small></span></label>
       <label class="chk"><input type="checkbox" name="pm" value="audit_view"><span>سجل النشاطات<small>عرض من دخل ومن وافق ومن رفض</small></span></label>
     </fieldset>
     <div class="acts"><button class="btn auto" type="submit">حفظ</button><button class="btn sec auto" type="button" id="u-cancel">إلغاء</button></div>
@@ -1305,7 +1319,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
          Never switched on by hostname, because the real deployment proxies /api to the live server. ---- */
   var DEMO=/[?&]demo=1(&|$)/.test(location.search);
   function demoOn(){try{return localStorage.getItem('isLoggedIn')==='true'}catch(e){return false}}
-  function demoState(){var me={id:1,type:'admin',role:'gm',name:'مدير تجريبي',dept:'',unit:'',username:'admin',phone:'',perms:['requests_view','requests_decide','meetings','settings','users_manage','data_manage','audit_view']};
+  function demoState(){var me={id:1,type:'admin',role:'gm',name:'مدير تجريبي',dept:'',unit:'',username:'admin',phone:'',perms:['requests_view','requests_decide','requests_transfer','meetings','settings','users_manage','reviewers_manage','support_manage','svc_manage','stamps_manage','staff_import','backup_export','backup_restore','item_delete','item_restore','audit_view']};
     return {me:me,users:[me],reqs:[],ints:[],log:[],trash:[],svc:{},stamps:{},staff:null,org:{},targets:{},pub:{emp:null},rvSeen:'',lastBackup:null,
       counts:{ad:1,rv:0,reqs:0,reqP:0,reqA:0,reqR:0,ints:0,intP:0,intS:0,trash:0,log:0,kb:0,version:'demo'}}}
   function demoLogin(u,p){if(u!=='admin'||p!=='admin123')return false;try{localStorage.setItem('isLoggedIn','true')}catch(e){}applyState(demoState());return true}
@@ -1331,26 +1345,26 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     rd.onload=function(){ok({name:x.file.name,type:x.file.type||(/\.pdf$/i.test(x.file.name)?'application/pdf':''),data:String(rd.result).split(',')[1]||''})};rd.onerror=no;rd.readAsDataURL(x.file)})}))}
   function fileLink(f){return f.id?'<a href="api/file/'+encodeURIComponent(f.id)+'" target="_blank" rel="noopener">'+esc(f.name)+' ('+fsize(f.size)+')</a>':'<span>'+esc(f.name)+' ('+fsize(f.size)+')</span>'}
 
-  var LBL={apply:'تقديم طلب',interview:'تقديم مقابلة',track:'متابعة الطلب',requests_view:'عرض الطلبات',requests_decide:'الموافقة والرفض',settings:'الإعدادات',users_manage:'إدارة المستخدمين',meetings:'طلبات المقابلة',data_manage:'النسخ الاحتياطي والحذف',audit_view:'سجل النشاطات',unit_inbox:'الطلبات المحوّلة'};
-  var ADMINP=['requests_view','requests_decide','meetings','settings','users_manage','data_manage','audit_view'];
+  var LBL={apply:'تقديم طلب',interview:'تقديم مقابلة',track:'متابعة الطلب',requests_view:'عرض الطلبات',requests_decide:'الموافقة والرفض',requests_transfer:'الهامش والتحويل',settings:'الإعدادات',users_manage:'إدارة المستخدمين',reviewers_manage:'إدارة المراجعين',support_manage:'المشاكل المرسلة',svc_manage:'تشغيل وإيقاف الخدمات',stamps_manage:'أسماء القادة والأختام',staff_import:'قائمة الموظفين',backup_export:'تصدير نسخة احتياطية',backup_restore:'استعادة نسخة احتياطية',item_delete:'حذف الطلبات',item_restore:'سجل المحذوفات',meetings:'طلبات المقابلة',audit_view:'سجل النشاطات',unit_inbox:'الطلبات المحوّلة'};
+  var ADMINP=['requests_view','requests_decide','requests_transfer','meetings','settings','users_manage','reviewers_manage','support_manage','svc_manage','stamps_manage','staff_import','backup_export','backup_restore','item_delete','item_restore','audit_view'];
   var ROLES={
     reviewer:{label:'مراجع',perms:['apply','interview','track']},
     gm:{label:'المدير العام',perms:ADMINP.slice()},
-    deputy:{label:'معاون المدير العام',perms:['requests_view','requests_decide','meetings','settings']},
-    deputy_admin:{label:'المعاون الإداري',perms:['requests_view','requests_decide','meetings','settings']},
-    deputy_tech:{label:'المعاون الفني',perms:['requests_view','requests_decide','meetings','settings']},
-    head:{label:'مدير قسم',perms:['requests_view','requests_decide','settings']},
+    deputy:{label:'معاون المدير العام',perms:['requests_view','requests_decide','requests_transfer','meetings','settings']},
+    deputy_admin:{label:'المعاون الإداري',perms:['requests_view','requests_decide','requests_transfer','meetings','settings']},
+    deputy_tech:{label:'المعاون الفني',perms:['requests_view','requests_decide','requests_transfer','meetings','settings']},
+    head:{label:'مدير قسم',perms:['requests_view','requests_decide','requests_transfer','settings']},
     officer:{label:'موظف مختص',perms:['requests_view','settings']},
     inquiry:{label:'موظف استعلامات',perms:['requests_view','settings']},
     unit:{label:'حساب قسم / شعبة',perms:['unit_inbox','settings']}
   };
-  var NEED={data:'data_manage',trash:'data_manage',audit:'audit_view',about:'settings',interview:'interview',meetings:'meetings',track:'track',apply:'apply',visitors:'requests_view',settings:'settings',users:'users_manage',reviewers:'users_manage',inbox:'unit_inbox',staff:'users_manage',support:'users_manage',profile:'track'};
+  var NEED={data:'backup_export,backup_restore,item_delete',trash:'item_restore',audit:'audit_view',about:'settings',interview:'interview',meetings:'meetings',track:'track',apply:'apply',visitors:'requests_view',settings:'settings',users:'users_manage',reviewers:'reviewers_manage',inbox:'unit_inbox',staff:'staff_import',support:'support_manage',profile:'track'};
   var VIEWS=['home','apply','track','interview','meetings','data','trash','audit','about','visitors','settings','users','reviewers','inbox','staff','support','profile'];
 
   var users=[],sid=null,editId=null,ORG={};
   var authEl=$('auth'),appEl=$('app');
   function cur(){return S.me}
-  function can(p){var u=cur();return !!u&&u.perms.indexOf(p)>-1}
+  function can(p){var u=cur();return !!u&&String(p).split(',').some(function(x){return u.perms.indexOf(x)>-1})}   /* 'a,b' = any of them */
   function digits(s){return s.replace(/[\u0660-\u0669]/g,function(c){return c.charCodeAt(0)-1632})}
   function toast(t){var e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){e.hidden=true},2800)}
   function setErr(id,m){var i=$(id);$(id+'-e').textContent=m||'';i.setAttribute('aria-invalid',m?'true':'false');if(m)i.setAttribute('aria-describedby',id+'-e');return !m}
@@ -1377,7 +1391,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     if(v==='visitors')$('vis-mode').textContent=can('requests_decide')?'صلاحيتك: عرض الطلبات والموافقة عليها أو رفضها.':'صلاحيتك: عرض الطلبات فقط، دون إمكانية الموافقة أو الرفض.';
     if(v==='settings'){
       var rows=[['الاسم',u.name],['الدور',ROLES[u.role].label+(u.unit?' — '+u.unit:'')],['القسم / الجهة',u.dept||'-'],['اسم المستخدم',u.username],['الهاتف',u.phone||'-']];
-      $('acct').innerHTML=rows.map(function(r){return '<dt>'+r[0]+'</dt><dd>'+esc(r[1])+'</dd>'}).join('');if(can('users_manage'))renderSvc()}
+      $('acct').innerHTML=rows.map(function(r){return '<dt>'+r[0]+'</dt><dd>'+esc(r[1])+'</dd>'}).join('');if(can('svc_manage'))renderSvc()}
     if(v==='users')renderUsers();
     if(v==='reviewers')renderReviewers();
     if(v==='inbox')renderInbox();
@@ -1480,8 +1494,8 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   $('uform').addEventListener('change',function(e){var t=e.target;
     if(t.id==='u-role')setPerms(ROLES[t.value].perms);
     else if(t.name==='pm'){var f=function(v){return $('uform').querySelector('[value='+v+']')};
-      if(t.value==='requests_decide'&&t.checked)f('requests_view').checked=true;
-      if(t.value==='requests_view'&&!t.checked)f('requests_decide').checked=false}});
+      if((t.value==='requests_decide'||t.value==='requests_transfer')&&t.checked)f('requests_view').checked=true;
+      if(t.value==='requests_view'&&!t.checked){f('requests_decide').checked=false;f('requests_transfer').checked=false}}});
   $('uform').addEventListener('submit',function(e){e.preventDefault();
     var n=$('u-name').value.trim(),d=$('u-dept').value.trim(),un=$('u-user').value.trim(),ph=digits($('u-phone').value.trim()),p=$('u-pass').value;
     var ok=[setErr('u-name',n.split(/\s+/).length>=2?'':'يرجى كتابة الاسم الثنائي على الأقل'),
@@ -1521,7 +1535,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   function stpPreview(){STP.forEach(function(x){$(x[0]+'-p').innerHTML=stampHTML(x[3],$(x[0]).value.trim(),x[2],new Date().toISOString())})}
   function renderStamps(){var n=stampNames();STP.forEach(function(x){if(document.activeElement!==$(x[0]))$(x[0]).value=n[x[1]]});stpPreview()}
   STP.forEach(function(x){$(x[0]).addEventListener('input',stpPreview)});
-  $('stp-save').onclick=function(){if(!can('users_manage'))return;var g=$('stp-gm').value.trim();
+  $('stp-save').onclick=function(){if(!can('stamps_manage'))return;var g=$('stp-gm').value.trim();
     if(g.split(/\s+/).length<2){toast('اكتب اسم المدير العام كاملاً');$('stp-gm').focus();return}
     var bad=STP.slice(1).filter(function(x){var v=$(x[0]).value.trim();return v&&v.split(/\s+/).length<2})[0];if(bad){toast('اكتب اسم '+bad[2]+' كاملاً أو اتركه فارغاً');$(bad[0]).focus();return}
     api('stamps_set',{gm:g,deputy_admin:$('stp-da').value.trim(),deputy_tech:$('stp-dt').value.trim()}).then(function(j){if(!j.ok)return fail(j);renderStamps();toast('تم حفظ الأسماء')})};
@@ -1529,7 +1543,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     [['req','svc-req','svc-req-s'],['int','svc-int','svc-int-s']].forEach(function(x){$(x[1]).setAttribute('aria-checked',c[x[0]]);
       var sm=$(x[2]);sm.textContent=c[x[0]]?'مفعّل — المراجعون يستطيعون التقديم':'متوقف — تظهر للمراجع رسالة الاعتذار';sm.className=c[x[0]]?'':'off'});
     if(document.activeElement!==$('svc-msg'))$('svc-msg').value=c.msg}
-  ['req','int'].forEach(function(k){$('svc-'+k).onclick=function(){if(!can('users_manage'))return;var on=!svc()[k],p={};p[k]=on;
+  ['req','int'].forEach(function(k){$('svc-'+k).onclick=function(){if(!can('svc_manage'))return;var on=!svc()[k],p={};p[k]=on;
     api('svc_set',p).then(function(j){if(!j.ok)return fail(j);renderSvc();toast(on?'تم تفعيل استقبال '+KIND[k]:'تم إيقاف استقبال '+KIND[k])})}});
   $('svc-save').onclick=function(){var m=$('svc-msg').value.trim();if(m.length<5){toast('اكتب رسالة اعتذار أوضح');return}
     api('svc_set',{msg:m}).then(function(j){if(!j.ok)return fail(j);toast('تم حفظ رسالة الاعتذار')})};
@@ -1584,7 +1598,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
           return '<button class="sbtn rvt" data-rvblk="'+k+'" data-id="'+u.id+'" aria-pressed="'+b+'">'+(b?'تفعيل ':'إيقاف ')+(k==='req'?'الطلبات':'المقابلات')+'</button>'}).join('')+
         '<button class="sbtn" data-rvedit="'+u.id+'" aria-label="تعديل '+esc(u.name)+'">تعديل</button>'+'<button class="sbtn danger" data-rvdel="'+u.id+'" aria-label="حذف حساب '+esc(u.name)+'">حذف الحساب</button></div></li>'}).join('');
   }
-  function markRevSeen(){if(!sid||!can('users_manage'))return;var last=revList().map(joinedAt).filter(Boolean).sort().pop();
+  function markRevSeen(){if(!sid||!can('reviewers_manage'))return;var last=revList().map(joinedAt).filter(Boolean).sort().pop();
     if(last&&(!S.rvSeen||last>S.rvSeen)){S.rvSeen=last;api('rv_seen',{at:last})}}
   $('rv-q').addEventListener('input',renderReviewers);
   document.querySelectorAll('[data-rvs]').forEach(function(b){b.onclick=function(){rvSort=b.dataset.rvs;
@@ -1745,7 +1759,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     $('st-map').hidden=false;$('st-map').scrollIntoView({behavior:'smooth',block:'start'})}
   $('st-map-x').onclick=function(){$('st-map').hidden=true;stPending=null};
   $('st-remap').onclick=function(){var s0=staff();if(!s0)return;stPending={file:s0.file,cols:s0.cols,rows:s0.rows,map:Object.assign({},s0.map),keep:true};openMap(stPending)};
-  $('st-map').addEventListener('submit',function(e){e.preventDefault();if(!stPending||!can('users_manage'))return;var m={},ok=true;
+  $('st-map').addEventListener('submit',function(e){e.preventDefault();if(!stPending||!can('staff_import'))return;var m={},ok=true;
     MAPK.forEach(function(k){m[k[0]]=+$('sm-'+k[0]).value;var bad=k[2]&&m[k[0]]<0;$('sm-'+k[0]+'-e').textContent=bad?'هذا الحقل مطلوب':'';if(bad)ok=false});
     if(ok&&m.id===m.ver){$('sm-ver-e').textContent='اختر عموداً غير عمود الرقم الوظيفي';ok=false}
     if(!ok)return;var pend=stPending;
@@ -1927,7 +1941,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     fillDept(f.dept||'');fillSec((r.unitWork&&r.unitWork.sec)||f.sec||'');
     var unitView=cur().role==='unit';['f-to','f-ham','f-ham-o','f-dept','f-dept-o'].forEach(function(i){$(i).disabled=unitView});
     $('fm-sub').textContent=r.no+' • '+r.type+' • '+r.applicant.name+(f.at?' • آخر حفظ: '+fdt(f.at)+' ('+f.byName+')':'');
-    $('fm-save').hidden=!can('requests_decide');fmMsg('');
+    $('fm-save').hidden=!can('requests_transfer');fmMsg('');
     $('fm').hidden=false;document.body.classList.add('fm-open');drawSheet();$('f-to').focus();
   }
   function closeSheet(){$('fm').hidden=true;document.body.classList.remove('fm-open');var id=fmReq&&fmReq.id;fmReq=null;
@@ -1944,7 +1958,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     drawSheet()});
   $('fm').addEventListener('input',function(e){if(e.target.tagName==='INPUT')drawSheet()});
   $('fm-save').onclick=function(){
-    if(!fmReq||!can('requests_decide'))return;var f=fmState();
+    if(!fmReq||!can('requests_transfer'))return;var f=fmState();
     if(!f.ham){fmMsg('يرجى اختيار الهامش أو كتابته قبل التنفيذ.');$('f-ham').focus();return}
     if(!f.dept){fmMsg('يرجى اختيار القسم المعني بالتحويل.');$('f-dept').focus();return}
     var u=cur(),id=fmReq.id,btn=this;btn.disabled=true;
@@ -2181,7 +2195,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       if(can('meetings')){var pm=is.filter(function(r){return r.target===u.role&&r.status===IS.p});pm.forEach(function(r){keys.push('m'+r.id)});
         if(pm.length)items.push({t:'يوجد '+pm.length+' طلب مقابلة بانتظار تحديد الموعد',s:'اضغط لفتح طلبات المقابلة',go:'meetings'});
         pm.slice(-3).reverse().forEach(function(r){items.push({t:'طلب مقابلة من '+r.applicant.name,s:fdt(r.date),go:'meetings'})})}
-      if(can('users_manage')){var ns=supList().filter(function(m){return m.status===SUP_N});ns.forEach(function(m){keys.push('s'+m.id)});
+      if(can('support_manage')){var ns=supList().filter(function(m){return m.status===SUP_N});ns.forEach(function(m){keys.push('s'+m.id)});
         if(ns.length)items.push({t:'يوجد '+ns.length+' رسالة دعم فني جديدة',s:'اضغط لفتح المشاكل المرسلة',go:'support'});
         ns.slice(-3).reverse().forEach(function(m){items.push({t:'مشكلة من '+m.name,s:fdt(m.created),go:'support'})})}
       var sn=nSeen();cnt=keys.filter(function(k){return !sn[k]}).length;
@@ -2228,7 +2242,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     if(rc&&u.type==='admin'){var rv=revList(),nw=rv.filter(function(r){return isNewRev(r)}).length;
       rc.textContent=rv.length?'عدد المراجعين المسجلين: '+rv.length:'لا يوجد مراجعون مسجلون بعد';
       $('rv-new').textContent=nw+' جديد';$('rv-new').hidden=!nw}
-    var sn=u.type==='admin'&&can('users_manage')?supList().filter(function(m){return m.status===SUP_N}).length:0;if($('sup-new')){$('sup-new').textContent=sn+' جديدة';$('sup-new').hidden=!sn}
+    var sn=u.type==='admin'&&can('support_manage')?supList().filter(function(m){return m.status===SUP_N}).length:0;if($('sup-new')){$('sup-new').textContent=sn+' جديدة';$('sup-new').hidden=!sn}
     if(ic){ic.dataset.o=ic.dataset.o||ic.textContent;var mi=is.filter(function(r){return r.uid===sid}),pi=mi.filter(function(r){return r.status===IS.p}).length;ic.textContent=mi.length?'مقابلاتك: '+mi.length+' • بانتظار الموعد: '+pi:ic.dataset.o;
       var ci=closedInfo('int');if(ci)ic.textContent=svc().int?'متوقف على حسابك حالياً':'الاستقبال متوقف حالياً'}
   }
@@ -2413,7 +2427,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
       '<div class="help">'+esc(r.applicant.name)+' • حذفه '+esc(t.by.name)+' ('+esc(t.by.role)+') • '+fdt(t.at)+'</div>'+
       '<div style="margin-top:4px;overflow-wrap:anywhere"><b>سبب الحذف:</b> '+esc(t.reason)+'</div></div>'+
       '<div class="acts" style="margin:0"><button class="sbtn" data-tact="toggle" data-id="'+t.tid+'" aria-expanded="'+o+'">'+(o?'إخفاء':'التفاصيل')+'</button>'+
-      (can('data_manage')?'<button class="btn auto" data-tact="restore" data-id="'+t.tid+'">استرجاع</button>':'')+'</div>'+
+      (can('item_restore')?'<button class="btn auto" data-tact="restore" data-id="'+t.tid+'">استرجاع</button>':'')+'</div>'+
       '<div class="detail"'+(o?'':' hidden')+'><div class="qbox"><b>'+(isReq?'نص الطلب':'سبب المقابلة')+':</b>\n'+esc(isReq?r.text:r.reason)+'</div>'+
       (r.files.length?'<div class="chips">'+r.files.map(fileLink).join('')+'</div>':'<div class="help">لا توجد مرفقات.</div>')+
       '<div class="help" style="margin-top:8px">الحالة وقت الحذف: '+esc(r.status)+' • تاريخ التقديم: '+fdt(r.date)+'</div></div></li>';
@@ -2424,7 +2438,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     $('trlist').innerHTML=rs.length?rs.map(trow).join(''):'<li class="box empty" style="margin:0">'+(tr.length?'لا توجد نتائج مطابقة.':'لا توجد عناصر محذوفة. أي طلب أو مقابلة تحذفها ستظهر هنا.')+'</li>';
   }
   function restoreItem(tid){
-    if(!can('data_manage'))return;
+    if(!can('item_restore'))return;
     api('item_restore',{tid:tid}).then(function(j){if(!j.ok)return fail(j);
       toast('تم استرجاع '+(j.kind==='req'?'الطلب':'المقابلة')+' '+j.no);renderTrash();refreshBell();updateCards()});
   }
@@ -2447,7 +2461,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   }
   /* the server builds the backup file; the browser just downloads it */
   $('bk-export').onclick=function(){
-    if(!can('data_manage'))return;
+    if(!can('backup_export'))return;
     var a=document.createElement('a');a.href='api/backup';a.download='';document.body.appendChild(a);a.click();a.remove();
     bkMsg('بدأ تنزيل النسخة الاحتياطية. احفظ الملف في مكان آمن خارج الخادم.',true);
     setTimeout(function(){fetchState().then(function(st){if(st){applyState(st);if(curView==='data')renderData()}})},1500);
@@ -2494,7 +2508,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
     rd.readAsText(f);
   });
   $('bk-restore').onclick=function(){
-    if(!pendingBackup||!can('data_manage'))return;
+    if(!pendingBackup||!can('backup_restore'))return;
     var btn=this;
     if(!restoreArmed){restoreArmed=true;btn.textContent='اضغط مرة أخرى لتأكيد الاستبدال';
       setTimeout(function(){if(restoreArmed&&pendingBackup){restoreArmed=false;btn.textContent='استعادة هذه النسخة'}},6000);return}
@@ -2506,7 +2520,7 @@ footer.credit{background:linear-gradient(180deg,transparent,color-mix(in srgb,va
   };
 
   function deleteItem(kind,id,reason){
-    if(!can('data_manage'))return Promise.resolve();
+    if(!can('item_delete'))return Promise.resolve();
     return api('item_del',{kind:kind,id:id,reason:reason}).then(function(j){if(!j.ok)return fail(j);
       toast('نُقل '+(kind==='req'?'الطلب':'المقابلة')+' '+j.no+' إلى سجل المحذوفات')});
   }

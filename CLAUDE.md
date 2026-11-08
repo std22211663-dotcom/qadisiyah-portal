@@ -11,7 +11,7 @@ Arabic (RTL) e-government portal for the Qadisiyah Directorate of Education, Ira
 ## How the front end talks to the server
 - `GET /api/state` → everything the signed-in account may see (filtered by role in `stateFor()`); `{me:null}` when signed out.
 - `POST /api/act` with JSON `{a: '<action>', ...}` and header `X-Requested-With: qp` (CSRF guard). Response `{ok, error?, field?, state?}`; `field` is the input id to show the error under.
-- `GET /api/file/:uuid` (permission-checked), `GET /api/backup` (data_manage), `GET /api/public` (employee-login availability).
+- `GET /api/file/:uuid` (permission-checked), `GET /api/backup` (backup_export), `GET /api/public` (employee-login availability).
 - Client: `api(action, body)` applies the returned `state` into `S`; accessors `reqs()`, `ints()`, `logs()`, `trash()`, `staff()`, `svc()`, `stampNames()`, `cur()` read from `S`. The page polls `/api/state` every 15 s.
 - **Every rule must be enforced in the server action** (`A.<name>` in server.js). Client checks are only for UX.
 
@@ -24,8 +24,8 @@ Arabic (RTL) e-government portal for the Qadisiyah Directorate of Education, Ira
 - Employee-number login (`emp_login`, the "الرقم الوظيفي" tab, always available): first tries the imported staff list (`staff_meta.map` says which column is the id and which is the verification field), then a registered reviewer account whose `emp_id` matches and whose **birth date or national id** matches. 5 wrong tries lock the IP and the account (`e:ip`, `ea:empNo`) for 5 minutes. Reviewers only; never admin accounts.
 - Reviewer identity: signup requires `empNo` (stored in `users.emp_id`, unique, normalised by `idnorm`) and `nid` (national id, in `data`, unique). `noDupPerson()` rejects a second account with the same name (hamza/diacritics/spacing ignored) + birth date, in signup, `rv_save` and `profile_save`.
 - Reviewer profile page (`profile_save`): reviewers edit their own data; changing empNo / nid / birth needs the current password. Accounts created from the staff list (`info` set) cannot change their empNo.
-- Managers (`users_manage`) add or edit reviewer accounts with `rv_save` (page "إدارة المراجعين").
-- Technical support: public `support_submit` (works signed out, max 5 per IP per hour, one image only) -> table `support`; managers read them on the "المشاكل المرسلة" page and close them with `support_status`. Images are readable only by `users_manage` (`canSeeFile`). Included in backup/restore.
+- Managers (`reviewers_manage`) add or edit reviewer accounts with `rv_save` (page "إدارة المراجعين").
+- Technical support: public `support_submit` (works signed out, max 5 per IP per hour, one image only) -> table `support`; managers read them on the "المشاكل المرسلة" page and close them with `support_status`. Images are readable only by `support_manage` (`canSeeFile`). Included in backup/restore.
 
 ## Running and testing
 ```bash

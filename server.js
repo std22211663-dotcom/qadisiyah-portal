@@ -56,8 +56,6 @@ CREATE INDEX IF NOT EXISTS req_uid ON requests(uid);
 CREATE INDEX IF NOT EXISTS int_uid ON interviews(uid);
 `);
 const q = (sql) => db.prepare(sql);
-const changes = () => db.prepare('SELECT total_changes() AS n').get().n;
-const hooks = { persist: null };   // set by cloud.js: called (awaited) after a request that changed data
 function tx(fn) { db.exec('BEGIN'); try { const r = fn(); db.exec('COMMIT'); return r; } catch (e) { db.exec('ROLLBACK'); throw e; } }
 
 const kvGet = (k, d) => { const r = q('SELECT v FROM kv WHERE k=?').get(k); return r ? JSON.parse(r.v) : d; };
@@ -655,10 +653,9 @@ const server = http.createServer(async (req, res) => {
       if (!fn || b.a === '__proto__') return sendJSON(res, 400, { ok: false, error: 'إجراء غير معروف' });
       let me = sessionUser(req);
       if (!me && !['login', 'emp_login', 'signup', 'logout', 'support_submit'].includes(b.a)) return sendJSON(res, 401, { ok: false, error: 'انتهت الجلسة، يرجى تسجيل الدخول من جديد.' });
-      const c0 = changes(), out = fn(me, b, ctx) || {};
+      const out = fn(me, b, ctx) || {};
       const who = out.me ? userById(out.me.id) : (out.relogin || b.a === 'logout' ? null : (me && userById(me.id)));
       delete out.me;
-      if (hooks.persist && changes() !== c0) await hooks.persist();
       return sendJSON(res, 200, Object.assign({ ok: true }, out, who ? { state: stateFor(who) } : {}));
     }
     if (p === '/api/backup' && req.method === 'GET') {
@@ -687,4 +684,4 @@ const server = http.createServer(async (req, res) => {
 });
 setInterval(() => { q('DELETE FROM sessions WHERE expires<?').run(Date.now()); }, 3600e3).unref();
 if (require.main === module) server.listen(PORT, HOST, () => console.log(`بوابة تربية القادسية تعمل على http://localhost:${PORT}  (البيانات في ${DATA_DIR})`));
-module.exports = { server, db, hooks };
+module.exports = { server, db };
